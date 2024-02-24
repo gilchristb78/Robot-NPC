@@ -24,6 +24,10 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Robot")
 	USplineComponent* Spline;
 
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Robot")
+	float Speed;
+
+	float DistanceAlongSpline;
 
 protected:
 	// Called when the game starts or when spawned
