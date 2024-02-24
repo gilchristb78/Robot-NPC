@@ -7,7 +7,7 @@ In this repository I will design a robot npc character that can walk along a set
 ## TODO
 
 - [X] Simple Skeletal Mesh Follow Spline
-- [ ] Stay along the ground not neccessarily spline
+- [X] Stay along the ground not neccessarily spline
 - [ ] Falling downward
 - [ ] Running into a wall not through
 - [ ] Multiple splines
