@@ -27,6 +27,8 @@ void ARobot::BeginPlay()
 {
 	Super::BeginPlay();
 	
+	Speed = BaseSpeed;
+
 }
 
 // Called every frame
@@ -34,15 +36,21 @@ void ARobot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
+	float CharacterZ = Character->GetRelativeLocation().Z + Spline->GetRelativeLocation().Z + GetActorLocation().Z;
+
 	DistanceAlongSpline = fmod(DistanceAlongSpline + (DeltaTime * Speed), Spline->GetSplineLength());
 	FVector Location = Spline->GetLocationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+
+	
+	
+
 	FRotator Rotation = Spline->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
 
 	FVector Start = Location;
-	Start.Z += 100;
+	Start.Z = CharacterZ + 200;
 
 	FVector End = Location;
-	End.Z -= 100;
+	End.Z = CharacterZ - 100;
 
 	FHitResult OutHit;
 
@@ -56,10 +64,26 @@ void ARobot::Tick(float DeltaTime)
 		Location.Z = OutHit.Location.Z;
 	}
 
+	if (CharacterZ - Location.Z < 0.1f && CharacterZ - Location.Z > -0.1f)
+	{
+		Speed = BaseSpeed;
+	}
+	else if(CharacterZ - Location.Z  <= -0.1f)
+	{
+		Speed = BaseSpeed * (1.0 - SlopeSpeedModifier);
+	}
+	else
+	{
+		Speed = BaseSpeed * (1 + SlopeSpeedModifier);
+	}
+
 	Rotation.Yaw -= 90;
 
 	Character->SetWorldLocation(Location);
 	Character->SetWorldRotation(Rotation);
+	CharacterZ = Location.Z;
+
+
 
 	//UE_LOG(LogTemp, Warning, TEXT("Distance: %f"), DistanceAlongSpline);
 }
