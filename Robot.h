@@ -25,6 +25,11 @@ public:
 	USplineComponent* Spline;
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Robot")
+	float BaseSpeed;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Robot")
+	float SlopeSpeedModifier;
+
 	float Speed;
 
 	float DistanceAlongSpline;
