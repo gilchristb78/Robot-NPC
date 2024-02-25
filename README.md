@@ -8,6 +8,9 @@ In this repository I will design a robot npc character that can walk along a set
 
 - [X] Simple Skeletal Mesh Follow Spline
 - [X] Stay along the ground not neccessarily spline
+- [ ] Change speed running uphill / downhill
+  - [X] constant decrease / increase if on hill (binary)
+  - [ ] lower / increase based on slope (angle)
 - [ ] Falling downward
 - [ ] Running into a wall not through
 - [ ] Multiple splines
