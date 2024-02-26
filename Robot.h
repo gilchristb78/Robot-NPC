@@ -58,5 +58,8 @@ private:
 	void MoveRobot(float DeltaTime);
 	bool canProceed(float DeltaTime);
 	bool bHittingWall = false;
+	bool bIsFalling = false;
+	bool isFalling(float DeltaTime);
+	
 
 };
