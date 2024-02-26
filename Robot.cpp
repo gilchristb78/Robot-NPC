@@ -36,24 +36,27 @@ void ARobot::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	
-	float CharacterZ = Character->GetRelativeLocation().Z + Spline->GetRelativeLocation().Z + GetActorLocation().Z;
+	FVector CharacterLocation = Character->GetRelativeLocation() + GetActorLocation();
 
-	DistanceAlongSpline = fmod(DistanceAlongSpline + (DeltaTime * Speed), Spline->GetSplineLength());
-	FVector Location = Spline->GetLocationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+	//UE_LOG(LogTemp, Warning, TEXT("Location: %f + %f + %f = %f"), Character->GetRelativeLocation().X, Spline->GetRelativeLocation().X, GetActorLocation().X, CharacterLocation.X)
 
+	float TempDistanceAlongSpline = fmod(DistanceAlongSpline + (DeltaTime * Speed), Spline->GetSplineLength());
+	float TempDistanceAlongSplineChecker = fmod(DistanceAlongSpline + (DeltaTime * Speed * 15), Spline->GetSplineLength());
+
+	FVector Location = Spline->GetLocationAtDistanceAlongSpline(TempDistanceAlongSpline, ESplineCoordinateSpace::World);
+	FVector LocationCheck = Spline->GetLocationAtDistanceAlongSpline(TempDistanceAlongSplineChecker, ESplineCoordinateSpace::World);
+	FRotator Rotation = Spline->GetRotationAtDistanceAlongSpline(TempDistanceAlongSpline, ESplineCoordinateSpace::World);
+
+	FVector Start = CharacterLocation;
+	Start.Z += 50;
+
+	FVector End = LocationCheck;
+	End.Z = CharacterLocation.Z + 50;
 	
-	
-
-	FRotator Rotation = Spline->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
-
-	FVector Start = Location;
-	Start.Z = CharacterZ + 200;
-
-	FVector End = Location;
-	End.Z = CharacterZ - 100;
+	DrawDebugSphere(GetWorld(), CharacterLocation, 30, 15, FColor::Red);
+	DrawDebugLine(GetWorld(), Start, End, FColor::Red);
 
 	FHitResult OutHit;
-
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
 
@@ -61,27 +64,43 @@ void ARobot::Tick(float DeltaTime)
 
 	if (OutHit.bBlockingHit)
 	{
-		Location.Z = OutHit.Location.Z;
-	}
 
-	if (CharacterZ - Location.Z < 0.1f && CharacterZ - Location.Z > -0.1f)
-	{
-		Speed = BaseSpeed;
-	}
-	else if(CharacterZ - Location.Z  <= -0.1f)
-	{
-		Speed = BaseSpeed * (1.0 - SlopeSpeedModifier);
 	}
 	else
 	{
-		Speed = BaseSpeed * (1 + SlopeSpeedModifier);
+		DistanceAlongSpline = TempDistanceAlongSpline;
+		Start = Location;
+		Start.Z = CharacterLocation.Z + 50;
+
+		End = Location; 
+		End.Z = CharacterLocation.Z - 100;
+		GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
+
+		if (OutHit.bBlockingHit)
+		{
+			Location.Z = OutHit.Location.Z;
+		}
+
+		if (CharacterLocation.Z - Location.Z < 0.1f && CharacterLocation.Z - Location.Z > -0.1f)
+		{
+			Speed = BaseSpeed;
+		}
+		else if (CharacterLocation.Z - Location.Z <= -0.1f)
+		{
+			Speed = BaseSpeed * (1.0 - SlopeSpeedModifier);
+		}
+		else
+		{
+			Speed = BaseSpeed * (1 + SlopeSpeedModifier);
+		}
+
+		Rotation.Yaw -= 90;
+
+		Character->SetWorldLocation(Location);
+		Character->SetWorldRotation(Rotation);
 	}
 
-	Rotation.Yaw -= 90;
-
-	Character->SetWorldLocation(Location);
-	Character->SetWorldRotation(Rotation);
-	CharacterZ = Location.Z;
+	
 
 
 
