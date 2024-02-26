@@ -14,6 +14,8 @@ In this repository I will design a robot npc character that can walk along a set
   - [ ] lower / increase based on slope (angle)
     - [ ] transition to this
 - [ ] Falling downward
+  - [ ] At Some Speed
+  - [ ] Gravity 
 - [X] Running into a wall not through
   - [ ] Path around obsticles back to spline  
 - [ ] Multiple splines
@@ -21,4 +23,6 @@ In this repository I will design a robot npc character that can walk along a set
   - [ ] Wait for some time (work)
   - [ ] Next Spline
   - [ ] keep doing that
+- [ ] Animations
+- [ ] New Mesh 
 
