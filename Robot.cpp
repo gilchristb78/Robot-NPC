@@ -45,6 +45,9 @@ void ARobot::MoveRobot(float DeltaTime)
 	if (!canProceed(DeltaTime)) //are we running into a wall?
 		return;
 
+	if (isFalling(DeltaTime))
+		return;
+
 
 	FVector CharacterLocation = Character->GetRelativeLocation() + GetActorLocation();	//where is our skeletalmesh?
 
@@ -53,21 +56,23 @@ void ARobot::MoveRobot(float DeltaTime)
 	//get next spot to move to
 	FVector Location = Spline->GetLocationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World); 
 	FRotator Rotation = Spline->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+	Location.Z = CharacterLocation.Z;
+
 
 	FHitResult OutHit;
 	FCollisionQueryParams Params;
 	Params.AddIgnoredActor(this);
 
 	FVector Start = Location;
-	Start.Z = CharacterLocation.Z + CharacterStepHeight;
+	Start.Z += CharacterStepHeight;
 
 	FVector End = Location;
-	End.Z = CharacterLocation.Z - (CharacterStepHeight * 2);
+	End.Z -=  CharacterStepHeight;
 
 	GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);	//find the ground
 
-	if (Debug)
-		DrawDebugLine(GetWorld(), Start, End, FColor::Red);
+	//if (Debug)
+		//DrawDebugLine(GetWorld(), Start, End, FColor::Red);
 
 	if (OutHit.bBlockingHit)
 	{
@@ -100,10 +105,12 @@ bool ARobot::canProceed(float DeltaTime)
 		return false;
 
 	FVector CharacterLocation = Character->GetRelativeLocation() + GetActorLocation();
+
 	//could get weird with slow deltatime (running into a wall miles away)
 	//TODO change to go from next location (not multiplied) forward 1 then get that vector and multiply by the character depth
 	float TempDistanceAlongSplineChecker = fmod(DistanceAlongSpline + (DeltaTime * Speed * CharacterCheckDistance), Spline->GetSplineLength());
 	FVector LocationCheck = Spline->GetLocationAtDistanceAlongSpline(TempDistanceAlongSplineChecker, ESplineCoordinateSpace::World);
+	
 	FVector Start = CharacterLocation;
 	Start.Z += CharacterStepHeight;
 
@@ -126,4 +133,62 @@ bool ARobot::canProceed(float DeltaTime)
 
 	return true;
 }
+
+bool ARobot::isFalling(float DeltaTime)
+{
+	FVector CharacterLocation = Character->GetRelativeLocation() + GetActorLocation();
+
+	float TempDistanceAlongSplineChecker = fmod(DistanceAlongSpline - (DeltaTime * Speed * CharacterCheckDistance * 2), Spline->GetSplineLength());
+	FVector LocationCheck = Spline->GetLocationAtDistanceAlongSpline(TempDistanceAlongSplineChecker, ESplineCoordinateSpace::World);
+
+	LocationCheck.Z = CharacterLocation.Z + CharacterStepHeight;
+
+	FVector Start = LocationCheck;
+
+	FVector End = LocationCheck;
+	End.Z -= CharacterStepHeight * 2;
+
+	if (Debug)
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Green);
+	}
+		
+
+	FHitResult OutHit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
+
+	if (OutHit.bBlockingHit)
+	{
+		bIsFalling = false;
+		return false;
+	}
+	else
+	{
+		bIsFalling = true;
+		Speed = BaseSpeed * .5;
+
+		End.Z -= CharacterStepHeight * 9;
+		GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
+
+		FVector NewLocation = CharacterLocation;
+		NewLocation.Z -= (Speed * DeltaTime);
+		NewLocation.Z = fmax(OutHit.Location.Z, NewLocation.Z);
+		if (NewLocation.Z == OutHit.Location.Z)
+		{
+			bIsFalling = false;
+		}
+		Character->SetWorldLocation(NewLocation);
+
+		return true;
+	}
+
+
+
+	return false;
+}
+
+
 
