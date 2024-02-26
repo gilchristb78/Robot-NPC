@@ -24,11 +24,22 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Robot")
 	USplineComponent* Spline;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Robot")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
 	float BaseSpeed;
 
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite, Category = "Robot")
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
 	float SlopeSpeedModifier;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
+	bool Debug;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
+	float CharacterStepHeight;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
+	float CharacterCheckDistance;
+
+
 
 	float Speed;
 
@@ -41,5 +52,11 @@ protected:
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+
+private:
+
+	void MoveRobot(float DeltaTime);
+	bool canProceed(float DeltaTime);
+	bool bHittingWall = false;
 
 };
