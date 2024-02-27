@@ -24,6 +24,9 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Robot")
 	USplineComponent* Spline;
 
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Robot")
+	TArray<USplineComponent*> Splines;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
 	float BaseSpeed;
 

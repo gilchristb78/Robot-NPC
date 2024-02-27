@@ -11,12 +11,15 @@ ARobot::ARobot()
 	PrimaryActorTick.bCanEverTick = true;
 
 	
+
 	Spline = CreateDefaultSubobject<USplineComponent>("Spline");
 	Spline->SetupAttachment(GetRootComponent());
-	Spline->SetClosedLoop(true);
+	Splines.Add(Spline);
 
 	Character = CreateDefaultSubobject<USkeletalMeshComponent>("Character");
-	Character->SetupAttachment(Spline); 
+	Character->SetupAttachment(Spline);
+
+	
 
 
 	DistanceAlongSpline = 0;
@@ -49,13 +52,15 @@ void ARobot::MoveRobot(float DeltaTime)
 		return;
 
 
-	FVector CharacterLocation = Character->GetRelativeLocation() + GetActorLocation();	//where is our skeletalmesh?
-
-	DistanceAlongSpline = fmod(DistanceAlongSpline + (DeltaTime * Speed), Spline->GetSplineLength()); //advance
+	FVector CharacterLocation = Character->GetRelativeLocation() + Splines[0]->GetRelativeLocation();	//where is our skeletalmesh?
 	
+
+	DistanceAlongSpline = DistanceAlongSpline + (DeltaTime * Speed); //advance
+	//if > Spline[i].length i++
+
 	//get next spot to move to
-	FVector Location = Spline->GetLocationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World); 
-	FRotator Rotation = Spline->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+	FVector Location = Splines[0]->GetLocationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+	FRotator Rotation = Splines[0]->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
 	Location.Z = CharacterLocation.Z;
 
 
@@ -101,15 +106,13 @@ void ARobot::MoveRobot(float DeltaTime)
 
 bool ARobot::canProceed(float DeltaTime)
 {
-	if(bHittingWall)
-		return false;
-
-	FVector CharacterLocation = Character->GetRelativeLocation() + GetActorLocation();
+	
+	FVector CharacterLocation = Character->GetRelativeLocation() + Splines[0]->GetRelativeLocation();
 
 	//could get weird with slow deltatime (running into a wall miles away)
 	//TODO change to go from next location (not multiplied) forward 1 then get that vector and multiply by the character depth
-	float TempDistanceAlongSplineChecker = fmod(DistanceAlongSpline + (DeltaTime * Speed * CharacterCheckDistance), Spline->GetSplineLength());
-	FVector LocationCheck = Spline->GetLocationAtDistanceAlongSpline(TempDistanceAlongSplineChecker, ESplineCoordinateSpace::World);
+	float TempDistanceAlongSplineChecker = DistanceAlongSpline + (DeltaTime * Speed * CharacterCheckDistance);
+	FVector LocationCheck = Splines[0]->GetLocationAtDistanceAlongSpline(TempDistanceAlongSplineChecker, ESplineCoordinateSpace::World);
 	
 	FVector Start = CharacterLocation;
 	Start.Z += CharacterStepHeight;
@@ -117,8 +120,11 @@ bool ARobot::canProceed(float DeltaTime)
 	FVector End = LocationCheck;
 	End.Z = CharacterLocation.Z + CharacterStepHeight;
 
-	if(Debug)
+	if (Debug)
+	{
 		DrawDebugLine(GetWorld(), Start, End, FColor::Red);
+	}
+		
 
 	FHitResult OutHit;
 	FCollisionQueryParams Params;
@@ -138,8 +144,8 @@ bool ARobot::isFalling(float DeltaTime)
 {
 	FVector CharacterLocation = Character->GetRelativeLocation() + GetActorLocation();
 
-	float TempDistanceAlongSplineChecker = fmod(DistanceAlongSpline - (DeltaTime * Speed * CharacterCheckDistance * 2), Spline->GetSplineLength());
-	FVector LocationCheck = Spline->GetLocationAtDistanceAlongSpline(TempDistanceAlongSplineChecker, ESplineCoordinateSpace::World);
+	float TempDistanceAlongSplineChecker = DistanceAlongSpline - (DeltaTime * Speed * CharacterCheckDistance * 2);
+	FVector LocationCheck = Splines[0]->GetLocationAtDistanceAlongSpline(TempDistanceAlongSplineChecker, ESplineCoordinateSpace::World);
 
 	LocationCheck.Z = CharacterLocation.Z + CharacterStepHeight;
 
@@ -167,6 +173,7 @@ bool ARobot::isFalling(float DeltaTime)
 	}
 	else
 	{
+
 		bIsFalling = true;
 		Speed = BaseSpeed * .5;
 
