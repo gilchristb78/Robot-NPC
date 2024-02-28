@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Components/SplineComponent.h"
 #include "RobotPawn.generated.h"
+
 
 UCLASS()
 class ROBIT_API ARobotPawn : public APawn
@@ -18,14 +20,23 @@ public:
 	UPROPERTY(EditAnywhere)
 	USceneComponent* OurVisibleComponent;
 
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Robot")
+	USkeletalMeshComponent* Character;
+
+	UPROPERTY(EditAnywhere)
+	USplineComponent* Spline;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
 	float Speed;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
+	float RotationSpeed;
 
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
 
-public:	
+public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
@@ -37,9 +48,12 @@ public:
 	void Move_YAxis(float AxisValue);
 	void StartGrowing();
 	void StopGrowing();
+	void MakePoint();
 
 	//Input variables
-	FVector CurrentVelocity;
+	float CurrentVelocity;
+	float CurrentRotationAmount;
 	bool bGrowing;
+	int lastNumPoints;
 
 };
