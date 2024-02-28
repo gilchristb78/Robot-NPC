@@ -13,13 +13,22 @@ ARobotPawn::ARobotPawn()
 	// Create a dummy root component we can attach things to.
 	RootComponent = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	// Create a camera and a visible object
+	Character = CreateDefaultSubobject<USkeletalMeshComponent>("Character");
+	Character->SetupAttachment(RootComponent);
+
+
 	UCameraComponent* OurCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("OurCamera"));
 	OurVisibleComponent = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("OurVisibleComponent"));
 	// Attach our camera and visible object to our root component. Offset and rotate the camera.
-	OurCamera->SetupAttachment(RootComponent);
-	OurCamera->SetRelativeLocation(FVector(-250.0f, 0.0f, 250.0f));
-	OurCamera->SetRelativeRotation(FRotator(-45.0f, 0.0f, 0.0f));
+	OurCamera->SetupAttachment(Character);
+	OurCamera->SetRelativeLocation(FVector(0.0f, -275.0f, 150.0f));
+	OurCamera->SetRelativeRotation(FRotator(-15.0f, 90.0f, 0.0f));
 	OurVisibleComponent->SetupAttachment(RootComponent);
+
+	
+
+	Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
+	Spline->SetupAttachment(RootComponent);
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
@@ -29,6 +38,10 @@ ARobotPawn::ARobotPawn()
 void ARobotPawn::BeginPlay()
 {
 	Super::BeginPlay();
+
+	Spline->ClearSplinePoints();
+	lastNumPoints = 0;
+
 	
 }
 
@@ -52,12 +65,35 @@ void ARobotPawn::Tick(float DeltaTime)
 	CurrentScale = FMath::Clamp(CurrentScale, 1.0f, 2.0f);
 	OurVisibleComponent->SetWorldScale3D(FVector(CurrentScale));
 
-// Handle movement based on our "MoveX" and "MoveY" axes
-	if (!CurrentVelocity.IsZero())
+	if (CurrentRotationAmount != 0)
 	{
-		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime);
-		SetActorLocation(NewLocation);
+		FRotator NewRotation = Character->GetRelativeRotation() + FRotator(0.0f, CurrentRotationAmount * DeltaTime, 0.0f);
+		Character->SetRelativeRotation(NewRotation);
 	}
+
+// Handle movement based on our "MoveX" and "MoveY" axes
+	if (CurrentVelocity != 0)
+	{
+		FVector NewLocation = Character->GetRelativeLocation() + GetActorLocation() + (CurrentVelocity * DeltaTime * Character->GetRightVector());
+		Character->SetWorldLocation(NewLocation);
+	}
+
+	int NumPoints = Spline->GetNumberOfSplinePoints();
+
+	if (NumPoints != lastNumPoints)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Spline Points: %d"), NumPoints);
+		
+		lastNumPoints = NumPoints;
+	}
+
+	for (int i = 0; i < NumPoints; i++)
+	{
+		FVector PointLocation = Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World);
+
+		DrawDebugSphere(GetWorld(), PointLocation, 30, 20, FColor::Red);
+	}
+	
 
 }
 
@@ -74,18 +110,19 @@ void ARobotPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	InputComponent->BindAxis("MoveX", this, &ARobotPawn::Move_XAxis);
 	InputComponent->BindAxis("MoveY", this, &ARobotPawn::Move_YAxis);
 
+	InputComponent->BindAction("MakePoint", IE_Pressed, this, &ARobotPawn::MakePoint);
+
 }
 
 void ARobotPawn::Move_XAxis(float AxisValue)
 {
 	// Move at 100 units per second forward or backward
-	CurrentVelocity.X = FMath::Clamp(AxisValue, -1.0f, 1.0f) * 100.0f * Speed;
+	CurrentVelocity = FMath::Clamp(AxisValue, -1.0f, 1.0f) * 100.0f * Speed;
 }
 
 void ARobotPawn::Move_YAxis(float AxisValue)
 {
-	// Move at 100 units per second right or left
-	CurrentVelocity.Y = FMath::Clamp(AxisValue, -1.0f, 1.0f) * 100.0f * Speed;
+	CurrentRotationAmount = FMath::Clamp(AxisValue, -1.0f, 1.0f) * 90.0f * RotationSpeed;
 }
 
 void ARobotPawn::StartGrowing()
@@ -96,5 +133,12 @@ void ARobotPawn::StartGrowing()
 void ARobotPawn::StopGrowing()
 {
 	bGrowing = false;
+}
+
+void ARobotPawn::MakePoint()
+{
+	FVector PointLoc = Character->GetRelativeLocation() + GetActorLocation();
+	Spline->AddSplineWorldPoint(PointLoc);
+	UE_LOG(LogTemp, Warning, TEXT("Point Made @ %f, %f, %f"), PointLoc.X, PointLoc.Y, PointLoc.Z);
 }
 
