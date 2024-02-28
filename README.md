@@ -44,12 +44,16 @@ In this repository I will design a robot npc character that can walk along a set
   - [ ] Line Trace Posses
   - [ ] UnPosses
   
-  - [ ] Movement (Forward / Back / Left / Right / Rotate)
+  - [ ] Movement 
+    - [X] Basic (Forward / Back /  Rotate (Left / Right))
     - [ ] More advanced movement (jump / grapple / etc. based on future features)
   
   - [ ] Make a Spline
     - [ ] Spawn DebugBalls after traveling x distance or pressing a key
        - [ ] add points to spline
+         - [X] button pres
+         - [ ] distance
+       - [X] Spawn Debug Ball 
     - [ ] if current spline int == current direction (1 or -1) add to same spline
     - [ ] else add new spline
     - [ ] reversing addes new spline with int value of -1
