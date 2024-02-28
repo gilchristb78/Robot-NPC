@@ -23,14 +23,23 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Robot")
 	USkeletalMeshComponent* Character;
 
-	UPROPERTY(EditAnywhere)
-	USplineComponent* Spline;
+	UPROPERTY(EditAnywhere, Category = "Robot")
+	TArray<USplineComponent*> Splines;
+
+	UPROPERTY(EditAnywhere, Category = "Robot")
+	TArray<int> SplineProperties;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
 	float Speed;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
 	float RotationSpeed;
+
+	UPROPERTY(EditAnywhere, Category = "Robot")
+	class UMaterialInterface* RobotPreviewSplineMaterial;
+
+	UPROPERTY(EditAnywhere, Category = "Robot")
+	UStaticMesh* RobotPreviewSplineMesh;
 
 protected:
 	// Called when the game starts or when spawned
@@ -48,7 +57,6 @@ public:
 	void Move_YAxis(float AxisValue);
 	void StartGrowing();
 	void StopGrowing();
-	void MakePoint();
 
 	//Input variables
 	float CurrentVelocity;

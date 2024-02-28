@@ -2,6 +2,7 @@
 
 
 #include "RobotPawn.h"
+#include "Components/SplineMeshComponent.h"
 #include "Camera/CameraComponent.h"
 
 // Sets default values
@@ -27,8 +28,9 @@ ARobotPawn::ARobotPawn()
 
 	
 
-	Spline = CreateDefaultSubobject<USplineComponent>(TEXT("Spline"));
-	Spline->SetupAttachment(RootComponent);
+	Splines.Add(CreateDefaultSubobject<USplineComponent>(TEXT("Spline")));
+	Splines[0]->SetupAttachment(RootComponent);
+	SplineProperties.Add(1);
 
 	AutoPossessPlayer = EAutoReceiveInput::Player0;
 
@@ -39,8 +41,40 @@ void ARobotPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Spline->ClearSplinePoints();
+	Splines[0]->ClearSplinePoints();
+	Splines[0]->AddSplineWorldPoint(Character->GetRelativeLocation() + GetActorLocation());
+	Splines[0]->AddSplineWorldPoint(Character->GetRelativeLocation() + GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * 50);
 	lastNumPoints = 0;
+
+	USplineMeshComponent* SplineMeshComponent = NewObject<USplineMeshComponent>(this, USplineMeshComponent::StaticClass());
+
+	SplineMeshComponent->SetStaticMesh(RobotPreviewSplineMesh);
+
+	SplineMeshComponent->SetMobility(EComponentMobility::Movable);
+	SplineMeshComponent->RegisterComponentWithWorld(GetWorld());
+	SplineMeshComponent->AttachToComponent(RootComponent,FAttachmentTransformRules::KeepRelativeTransform);
+
+	FVector StartPoint = Splines[0]->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::Local);
+	FVector StartTangent = Splines[0]->GetTangentAtSplinePoint(0, ESplineCoordinateSpace::Local);
+	FVector EndPoint = Splines[0]->GetLocationAtSplinePoint(1, ESplineCoordinateSpace::Local);
+	FVector EndTangent = Splines[0]->GetTangentAtSplinePoint(1, ESplineCoordinateSpace::Local);
+
+	SplineMeshComponent->SetStartAndEnd(StartPoint, StartTangent, EndPoint, EndTangent);
+
+	SplineMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+
+	if (RobotPreviewSplineMaterial)
+	{
+		UE_LOG(LogTemp, Warning, TEXT("Set that material"));
+		SplineMeshComponent->SetMaterial(0, RobotPreviewSplineMaterial);
+	}
+	
+	/*USplineMeshComponent* SplineMeshComponent = NewObject<USplineMeshComponent>(this, USplineMeshComponent::StaticClass());
+	if (SplineMeshComponent)
+	{
+		SplineMeshComponent->AttachToComponent(Splines[0], FAttachmentTransformRules::KeepRelativeTransform);
+
+	}*/
 
 	
 }
@@ -76,23 +110,63 @@ void ARobotPawn::Tick(float DeltaTime)
 	{
 		FVector NewLocation = Character->GetRelativeLocation() + GetActorLocation() + (CurrentVelocity * DeltaTime * Character->GetRightVector());
 		Character->SetWorldLocation(NewLocation);
+
+		if (FVector::Distance(NewLocation, Splines[Splines.Num() - 1]->GetLocationAtSplinePoint(Splines[Splines.Num() - 1]->GetNumberOfSplinePoints() - 1, ESplineCoordinateSpace::World)) > 200.0f)
+		{
+			if (CurrentVelocity > 0 && SplineProperties[SplineProperties.Num() - 1] == 1 || CurrentVelocity < 0 && SplineProperties[SplineProperties.Num() - 1] == -1)
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Same Direction"));
+				Splines[Splines.Num() - 1]->AddSplineWorldPoint(NewLocation);
+
+			} 
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Different Direction"));
+				Splines.Add(NewObject<USplineComponent>());
+				Splines[Splines.Num() - 1]->SetupAttachment(RootComponent);
+				Splines[Splines.Num() - 1]->ClearSplinePoints();
+				if (CurrentVelocity > 0)
+				{
+					SplineProperties.Add(1);
+				}
+				else
+				{
+					SplineProperties.Add(-1);
+				}
+				Splines[Splines.Num() - 1]->AddSplineWorldPoint(
+					Splines[Splines.Num() - 2]->GetLocationAtSplinePoint(
+						Splines[Splines.Num() - 2]->GetSplineLength() - 1, 
+						ESplineCoordinateSpace::World));
+				Splines[Splines.Num() - 1]->AddSplineWorldPoint(NewLocation);
+
+			}
+			
+			UE_LOG(LogTemp, Warning, TEXT("Point Made @ %f, %f, %f"), NewLocation.X, NewLocation.Y, NewLocation.Z);
+			
+		}
 	}
 
-	int NumPoints = Spline->GetNumberOfSplinePoints();
-
-	if (NumPoints != lastNumPoints)
+	for (int s = 0; s < Splines.Num(); s++)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Spline Points: %d"), NumPoints);
-		
-		lastNumPoints = NumPoints;
+		int NumPoints = Splines[s]->GetNumberOfSplinePoints();
+
+		for (int i = 0; i < NumPoints; i++)
+		{
+			FVector PointLocation = Splines[s]->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World);
+
+			if (SplineProperties[s] == 1)
+			{
+				DrawDebugSphere(GetWorld(), PointLocation, 30, 20, FColor::Red);
+			}
+			else
+			{
+				DrawDebugSphere(GetWorld(), PointLocation, 20, 20, FColor::Green);
+			}
+				
+		}
 	}
 
-	for (int i = 0; i < NumPoints; i++)
-	{
-		FVector PointLocation = Spline->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World);
-
-		DrawDebugSphere(GetWorld(), PointLocation, 30, 20, FColor::Red);
-	}
+	
 	
 
 }
@@ -109,8 +183,6 @@ void ARobotPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 	// Respond every frame to the values of our two movement axes, "MoveX" and "MoveY".
 	InputComponent->BindAxis("MoveX", this, &ARobotPawn::Move_XAxis);
 	InputComponent->BindAxis("MoveY", this, &ARobotPawn::Move_YAxis);
-
-	InputComponent->BindAction("MakePoint", IE_Pressed, this, &ARobotPawn::MakePoint);
 
 }
 
@@ -135,10 +207,4 @@ void ARobotPawn::StopGrowing()
 	bGrowing = false;
 }
 
-void ARobotPawn::MakePoint()
-{
-	FVector PointLoc = Character->GetRelativeLocation() + GetActorLocation();
-	Spline->AddSplineWorldPoint(PointLoc);
-	UE_LOG(LogTemp, Warning, TEXT("Point Made @ %f, %f, %f"), PointLoc.X, PointLoc.Y, PointLoc.Z);
-}
 
