@@ -39,6 +39,9 @@ public:
 	class UMaterialInterface* RobotPreviewSplineMaterial;
 
 	UPROPERTY(EditAnywhere, Category = "Robot")
+	class UMaterialInterface* RobotPreviewSplineMaterialBackward;
+
+	UPROPERTY(EditAnywhere, Category = "Robot")
 	UStaticMesh* RobotPreviewSplineMesh;
 
 protected:
@@ -62,6 +65,7 @@ public:
 	float CurrentVelocity;
 	float CurrentRotationAmount;
 	bool bGrowing;
-	int lastNumPoints;
+	void AddNewSpline(int Property);
+	void AddSplinePoint(FVector Location);
 
 };
