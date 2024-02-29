@@ -48,7 +48,7 @@ In this repository I will design a robot npc character that can walk along a set
     - [X] Basic (Forward / Back /  Rotate (Left / Right))
     - [ ] More advanced movement (jump / grapple / etc. based on future features)
   
-  - [ ] Make a Spline
+  - [X] Make a Spline
     - [X] Spawn DebugBalls after traveling x distance or pressing a key
        - [X] add points to spline
          - [X] button pres
@@ -60,8 +60,8 @@ In this repository I will design a robot npc character that can walk along a set
     - [ ] stopping / working has value > 1
     - [ ] visually see path (arrows along ground similar to how bloons td previews show before level)
       - [X] First Sections
-      - [ ] All Sections
-      - [ ] Reverse direction slightly different
+      - [X] All Sections
+      - [X] Reverse direction slightly different
       - [ ] Flag at start
   - [X] Make multiple spline
   - [ ] add non movement actions (wait / work)
