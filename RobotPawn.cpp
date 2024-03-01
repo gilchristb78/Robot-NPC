@@ -2,7 +2,6 @@
 
 
 #include "RobotPawn.h"
-#include "Components/SplineMeshComponent.h"
 #include "Camera/CameraComponent.h"
 
 // Sets default values
@@ -40,33 +39,6 @@ void ARobotPawn::BeginPlay()
 	Splines[0]->ClearSplinePoints();
 	SplineProperties.Add(1);
 	Splines[0]->AddSplineWorldPoint(Character->GetRelativeLocation() + GetActorLocation());
-
-	/*Splines[0]->ClearSplinePoints();
-	Splines[0]->AddSplineWorldPoint(Character->GetRelativeLocation() + GetActorLocation());
-	Splines[0]->AddSplineWorldPoint(Character->GetRelativeLocation() + GetActorLocation() + GetActorForwardVector() * 200 + GetActorRightVector() * 50);
-
-	USplineMeshComponent* SplineMeshComponent = NewObject<USplineMeshComponent>(this, USplineMeshComponent::StaticClass());
-
-	SplineMeshComponent->SetStaticMesh(RobotPreviewSplineMesh);
-
-	SplineMeshComponent->SetMobility(EComponentMobility::Movable);
-	SplineMeshComponent->RegisterComponentWithWorld(GetWorld());
-	SplineMeshComponent->AttachToComponent(RootComponent,FAttachmentTransformRules::KeepRelativeTransform);
-
-	FVector StartPoint = Splines[0]->GetLocationAtSplinePoint(0, ESplineCoordinateSpace::Local);
-	FVector StartTangent = Splines[0]->GetTangentAtSplinePoint(0, ESplineCoordinateSpace::Local);
-	FVector EndPoint = Splines[0]->GetLocationAtSplinePoint(1, ESplineCoordinateSpace::Local);
-	FVector EndTangent = Splines[0]->GetTangentAtSplinePoint(1, ESplineCoordinateSpace::Local);
-
-	SplineMeshComponent->SetStartAndEnd(StartPoint, StartTangent, EndPoint, EndTangent);
-
-	SplineMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-
-	if (RobotPreviewSplineMaterial)
-	{
-		UE_LOG(LogTemp, Warning, TEXT("Set that material"));
-		SplineMeshComponent->SetMaterial(0, RobotPreviewSplineMaterial);
-	}*/
 	
 }
 
@@ -102,17 +74,10 @@ void ARobotPawn::Tick(float DeltaTime)
 		FVector NewLocation = Character->GetRelativeLocation() + GetActorLocation() + (CurrentVelocity * DeltaTime * Character->GetRightVector());
 		Character->SetWorldLocation(NewLocation);
 
-		if (FVector::Distance(NewLocation, Splines[Splines.Num() - 1]->GetLocationAtSplinePoint(Splines[Splines.Num() - 1]->GetNumberOfSplinePoints() - 1, ESplineCoordinateSpace::World)) > 200.0f)
+		if (FVector::Distance(NewLocation, Splines[Splines.Num() - 1]->GetLocationAtSplinePoint(Splines[Splines.Num() - 1]->GetNumberOfSplinePoints() - 1, ESplineCoordinateSpace::World)) > 50.0f)
 		{
-			if (CurrentVelocity > 0 && SplineProperties[SplineProperties.Num() - 1] == 1 || CurrentVelocity < 0 && SplineProperties[SplineProperties.Num() - 1] == -1)
+			if (!(CurrentVelocity > 0 && SplineProperties[SplineProperties.Num() - 1] == 1 || CurrentVelocity < 0 && SplineProperties[SplineProperties.Num() - 1] == -1))
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Same Direction"));
-				//Splines[Splines.Num() - 1]->AddSplineWorldPoint(NewLocation);
-
-			} 
-			else
-			{
-				UE_LOG(LogTemp, Warning, TEXT("Different Direction"));
 				if (CurrentVelocity > 0)
 				{
 					AddNewSpline(1);
@@ -121,44 +86,11 @@ void ARobotPawn::Tick(float DeltaTime)
 				{
 					AddNewSpline(-1);
 				}
-
-				/*Splines[Splines.Num() - 1]->AddSplineWorldPoint(
-					Splines[Splines.Num() - 2]->GetLocationAtSplinePoint(
-						Splines[Splines.Num() - 2]->GetSplineLength() - 1, 
-						ESplineCoordinateSpace::World));*/
-				//Splines[Splines.Num() - 1]->AddSplineWorldPoint(NewLocation);
-
-			}
-			
-			UE_LOG(LogTemp, Warning, TEXT("Point Made @ %f, %f, %f"), NewLocation.X, NewLocation.Y, NewLocation.Z);
+			} 
 			AddSplinePoint(NewLocation);
 			
 		}
 	}
-
-	for (int s = 0; s < Splines.Num(); s++)
-	{
-		int NumPoints = Splines[s]->GetNumberOfSplinePoints();
-
-		for (int i = 0; i < NumPoints; i++)
-		{
-			FVector PointLocation = Splines[s]->GetLocationAtSplinePoint(i, ESplineCoordinateSpace::World);
-
-			if (SplineProperties[s] == 1)
-			{
-				DrawDebugSphere(GetWorld(), PointLocation, 30, 20, FColor::Red);
-			}
-			else
-			{
-				DrawDebugSphere(GetWorld(), PointLocation, 20, 20, FColor::Green);
-			}
-				
-		}
-	}
-
-	
-	
-
 }
 
 // Called to bind functionality to input
@@ -199,7 +131,7 @@ void ARobotPawn::StopGrowing()
 
 void ARobotPawn::AddNewSpline(int Property)
 {
-	Splines.Add(NewObject<USplineComponent>(this, USplineComponent::StaticClass()));
+	Splines.Add(NewObject<USplineComponent>(this, USplineComponent::StaticClass())); //also draw the last deb for this (maybe find a way to make em connect?)
 	Splines[Splines.Num() - 1]->SetupAttachment(RootComponent);
 	Splines[Splines.Num() - 1]->ClearSplinePoints();
 	SplineProperties.Add(Property);
@@ -214,9 +146,8 @@ void ARobotPawn::AddSplinePoint(FVector Location)
 {
 	Splines[Splines.Num() - 1]->AddSplineWorldPoint(Location);
 
-
 	USplineMeshComponent* SplineMeshComponent = NewObject<USplineMeshComponent>(this, USplineMeshComponent::StaticClass());
-
+		
 	SplineMeshComponent->SetStaticMesh(RobotPreviewSplineMesh);
 
 	SplineMeshComponent->SetMobility(EComponentMobility::Movable);
@@ -227,11 +158,16 @@ void ARobotPawn::AddSplinePoint(FVector Location)
 	int32 SplinePoint2 = Splines[Splines.Num() - 1]->GetNumberOfSplinePoints() - 1;
 
 	FVector StartPoint = Splines[Splines.Num() - 1]->GetLocationAtSplinePoint(SplinePoint1, ESplineCoordinateSpace::World) - GetActorLocation();
-	FVector StartTangent = Splines[Splines.Num() - 1]->GetTangentAtSplinePoint(SplinePoint1, ESplineCoordinateSpace::World);
+	FVector StartTangent = Splines[Splines.Num() - 1]->GetTangentAtSplinePoint(SplinePoint1, ESplineCoordinateSpace::Local);
 	FVector EndPoint = Splines[Splines.Num() - 1]->GetLocationAtSplinePoint(SplinePoint2, ESplineCoordinateSpace::World) - GetActorLocation();
-	FVector EndTangent = Splines[Splines.Num() - 1]->GetTangentAtSplinePoint(SplinePoint2, ESplineCoordinateSpace::World);
+	FVector EndTangent = Splines[Splines.Num() - 1]->GetTangentAtSplinePoint(SplinePoint2, ESplineCoordinateSpace::Local);
 
 	SplineMeshComponent->SetStartAndEnd(StartPoint, StartTangent, EndPoint, EndTangent);
+		
+	if (SplinePreviews.Num() > 0)
+	{
+		SplinePreviews[SplinePreviews.Num() - 1]->SetEndTangent(StartTangent);
+	}
 
 	SplineMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 
@@ -243,6 +179,8 @@ void ARobotPawn::AddSplinePoint(FVector Location)
 	{
 		SplineMeshComponent->SetMaterial(0, RobotPreviewSplineMaterialBackward);
 	}
+	SplinePreviews.Add(SplineMeshComponent);
 }
 
-
+//TODO: Draw the closest one aswell but overwrite it when the next one gets drawn.
+//Probably need the array now

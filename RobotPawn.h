@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "Components/SplineComponent.h"
+#include "Components/SplineMeshComponent.h"
 #include "RobotPawn.generated.h"
 
 
@@ -25,6 +26,8 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = "Robot")
 	TArray<USplineComponent*> Splines;
+
+	TArray<USplineMeshComponent*> SplinePreviews;
 
 	UPROPERTY(EditAnywhere, Category = "Robot")
 	TArray<int> SplineProperties;
