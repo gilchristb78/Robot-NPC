@@ -18,9 +18,6 @@ public:
 	// Sets default values for this pawn's properties
 	ARobotPawn();
 
-	UPROPERTY(EditAnywhere)
-	USceneComponent* OurVisibleComponent;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Robot")
 	USkeletalMeshComponent* Character;
 
@@ -60,14 +57,16 @@ public:
 
 	//Input functions
 	void Move_XAxis(float AxisValue);
-	void Move_YAxis(float AxisValue);
-	void StartGrowing();
-	void StopGrowing();
+	void Rotate_YAxis(float AxisValue);
+	void ShowPreview();
+	void HidePreview();
+	void TogglePreview();
+
+	bool bPreviewShowing = true;
 
 	//Input variables
 	float CurrentVelocity;
 	float CurrentRotationAmount;
-	bool bGrowing;
 	void AddNewSpline(int Property);
 	void AddSplinePoint(FVector Location);
 
