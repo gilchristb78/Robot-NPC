@@ -25,8 +25,19 @@ In this repository I will design a robot npc character that can walk along a set
 - [ ] Multiple splines
   - [X] Base Spline
   - [ ] Wait for some time (work)
-  - [ ] Next Spline
+  - [X] Next Spline
   - [ ] keep doing that
+     
+      
+- [ ] Change Properties to an enum representing what the robot is doing
+    - [ ] Forward / Back
+    - [ ] Rotate in Place
+    - [ ] Work
+- [ ] add an int array or something linked to enum representing how to do the thing
+    - [ ] what spline to follow
+    - [ ] how much to rotate
+    - [ ] specifics of work (# of items to collect, # of items to deposit, etc.)
+      - [ ] make more dynamic, what to collect + how many, 
 
       
 - [ ] New Mesh
@@ -36,8 +47,6 @@ In this repository I will design a robot npc character that can walk along a set
     - [ ] falling (parachute open then swing side to side and land)
     - [ ] Working (based on its job)
 - [ ] Document Here
-
-
 
 - [ ] Change Actor to Pawn
   - [X] Pawn With a Camera
@@ -69,7 +78,4 @@ In this repository I will design a robot npc character that can walk along a set
     - [ ] Stop making new points after hit flag (start)
       - [ ] Arrow points at start?
       - [ ] reset button starts again (new start and clear all old points)
-      - [ ] Save tracks?
-   
- 
-
+      - [ ] Save tracks? 
