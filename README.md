@@ -10,10 +10,16 @@ In this repository I will design a robot npc character that can walk along a set
 
 - [X] Stay along the ground not neccessarily spline
 
+- [X] Movement Speed
+  - [X] Basic set speed
+  - [X] Accelleration
+
 - [ ] Change speed running uphill / downhill
   - [X] constant decrease / increase if on hill (binary)
-    - [ ] Transition between current speed and Down / Up Speed (Acceleration)
-  - [ ] lower / increase based on slope (angle / steepness)
+    - [ ] Transition between current speed and Falling Speed (Acceleration)
+      - [ ] and direction 
+    - [ ] lower / increase based on slope (angle / steepness)
+      - [ ] Increase / Decrease Friction
 
 - [ ] Falling downward
   - [X] At Some Speed
