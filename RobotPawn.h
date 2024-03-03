@@ -30,10 +30,19 @@ public:
 	TArray<int> SplineProperties;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
-	float Speed;
+	float Speed = 5;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
-	float RotationSpeed;
+	float MaxSpeed = 400;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
+	float MaxRotationalSpeed = 120;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
+	float Friction = 200;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
+	float RotationSpeed = 1.4;
 
 	UPROPERTY(EditAnywhere, Category = "Robot")
 	class UMaterialInterface* RobotPreviewSplineMaterial;
@@ -65,8 +74,10 @@ public:
 	bool bPreviewShowing = true;
 
 	//Input variables
-	float CurrentVelocity;
-	float CurrentRotationAmount;
+	float CurrentVelocity = 0;
+	float CurrentAcceleration;
+	float CurrentRotationVelocity = 0;
+	float CurrentRotationAcceleration;
 	void AddNewSpline(int Property);
 	void AddSplinePoint(FVector Location);
 
