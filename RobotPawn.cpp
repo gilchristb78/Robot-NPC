@@ -41,10 +41,44 @@ void ARobotPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (CurrentRotationAmount != 0)
+	if (CurrentRotationAcceleration != 0)
 	{
-		FRotator NewRotation = Character->GetRelativeRotation() + FRotator(0.0f, CurrentRotationAmount * DeltaTime, 0.0f);
+		CurrentRotationVelocity = FMath::Clamp(CurrentRotationVelocity + CurrentRotationAcceleration * DeltaTime, -MaxRotationalSpeed, MaxRotationalSpeed);
+	}
+	else
+	{
+		if (CurrentRotationVelocity > 0)
+		{
+			CurrentRotationVelocity = FMath::Clamp(CurrentRotationVelocity -= RotationSpeed * DeltaTime * Friction, 0, MaxRotationalSpeed);
+		}
+		else if (CurrentRotationVelocity < 0)
+		{
+			CurrentRotationVelocity = FMath::Clamp(CurrentRotationVelocity += RotationSpeed * DeltaTime * Friction, -MaxRotationalSpeed, 0);
+		}
+	}
+
+	if (CurrentRotationVelocity != 0)
+	{
+		
+		FRotator NewRotation = Character->GetRelativeRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f);
 		Character->SetRelativeRotation(NewRotation);
+	}
+
+	if (CurrentAcceleration != 0)
+	{
+		CurrentVelocity = FMath::Clamp(CurrentVelocity + CurrentAcceleration * DeltaTime, -MaxSpeed, MaxSpeed);
+	}
+	else
+	{
+		if (CurrentVelocity > 0)
+		{
+			CurrentVelocity = FMath::Clamp(CurrentVelocity -= Speed * DeltaTime * Friction, 0, MaxSpeed);
+		}
+		else if (CurrentVelocity < 0)
+		{
+			CurrentVelocity = FMath::Clamp(CurrentVelocity += Speed * DeltaTime * Friction, -MaxSpeed, 0);
+		}
+		
 	}
 
 	if (CurrentVelocity != 0)
@@ -82,12 +116,12 @@ void ARobotPawn::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent
 void ARobotPawn::Move_XAxis(float AxisValue)
 {
 	// Move at 100 units per second forward or backward
-	CurrentVelocity = FMath::Clamp(AxisValue, -1.0f, 1.0f) * 100.0f * Speed;
+	CurrentAcceleration = FMath::Clamp(AxisValue, -1.0f, 1.0f) * 100.0f * Speed;
 }
 
 void ARobotPawn::Rotate_YAxis(float AxisValue)
 {
-	CurrentRotationAmount = FMath::Clamp(AxisValue, -1.0f, 1.0f) * 90.0f * RotationSpeed;
+	CurrentRotationAcceleration = FMath::Clamp(AxisValue, -1.0f, 1.0f) * 90.0f * RotationSpeed;
 }
 
 void ARobotPawn::ShowPreview()
