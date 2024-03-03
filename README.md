@@ -36,7 +36,7 @@ In this repository I will design a robot npc character that can walk along a set
      
       
 - [ ] Change Properties to an enum representing what the robot is doing
-    - [ ] Forward / Back
+    - [X] Forward / Back
     - [ ] Rotate in Place
     - [ ] Work
 - [ ] add an int array or something linked to enum representing how to do the thing
@@ -52,12 +52,15 @@ In this repository I will design a robot npc character that can walk along a set
     - [ ] Running tracks moving
     - [ ] falling (parachute open then swing side to side and land)
     - [ ] Working (based on its job)
+
 - [ ] Document Here
 
 - [ ] Change Actor to Pawn
   - [X] Pawn With a Camera
   - [ ] Line Trace Posses
   - [ ] UnPosses
+    - [ ] Just get out
+    - [ ] Start runnign program
   
   - [ ] Movement 
     - [X] Basic (Forward / Back /  Rotate (Left / Right))
