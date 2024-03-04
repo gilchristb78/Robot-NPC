@@ -32,7 +32,8 @@ void ARobotPawn::BeginPlay()
 	Splines[0] = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
 	Splines[0]->ClearSplinePoints();
 	Splines[0]->AddSplineWorldPoint(Character->GetRelativeLocation() + GetActorLocation());
-	SplineProperties.Add(1);
+	Instructions.Add(Instruction::ForwardMove);
+	Details.Add(0);
 	
 }
 
@@ -41,65 +42,7 @@ void ARobotPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	if (CurrentRotationAcceleration != 0)
-	{
-		CurrentRotationVelocity = FMath::Clamp(CurrentRotationVelocity + CurrentRotationAcceleration * DeltaTime, -MaxRotationalSpeed, MaxRotationalSpeed);
-	}
-	else
-	{
-		if (CurrentRotationVelocity > 0)
-		{
-			CurrentRotationVelocity = FMath::Clamp(CurrentRotationVelocity -= RotationSpeed * DeltaTime * Friction, 0, MaxRotationalSpeed);
-		}
-		else if (CurrentRotationVelocity < 0)
-		{
-			CurrentRotationVelocity = FMath::Clamp(CurrentRotationVelocity += RotationSpeed * DeltaTime * Friction, -MaxRotationalSpeed, 0);
-		}
-	}
-
-	if (CurrentRotationVelocity != 0)
-	{
-		
-		FRotator NewRotation = Character->GetRelativeRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f);
-		Character->SetRelativeRotation(NewRotation);
-	}
-
-	if (CurrentAcceleration != 0)
-	{
-		CurrentVelocity = FMath::Clamp(CurrentVelocity + CurrentAcceleration * DeltaTime, -MaxSpeed, MaxSpeed);
-	}
-	else
-	{
-		if (CurrentVelocity > 0)
-		{
-			CurrentVelocity = FMath::Clamp(CurrentVelocity -= Speed * DeltaTime * Friction, 0, MaxSpeed);
-		}
-		else if (CurrentVelocity < 0)
-		{
-			CurrentVelocity = FMath::Clamp(CurrentVelocity += Speed * DeltaTime * Friction, -MaxSpeed, 0);
-		}
-		
-	}
-
-	if (CurrentVelocity != 0)
-	{
-		FVector LastPoint = Splines[Splines.Num() - 1]->GetLocationAtSplinePoint(Splines[Splines.Num() - 1]->GetNumberOfSplinePoints() - 1, ESplineCoordinateSpace::World);
-		FVector NewLocation = Character->GetRelativeLocation() + GetActorLocation() + (CurrentVelocity * DeltaTime * Character->GetRightVector());
-		Character->SetWorldLocation(NewLocation);
-
-		if (FVector::Distance(NewLocation, LastPoint) > 50.0f)
-		{
-			int NewProperty = 0;
-			//forward or backward
-			CurrentVelocity < 0 ? NewProperty = -1 : NewProperty = 1;
-			//different direction?
-			if (!(SplineProperties[SplineProperties.Num() - 1] == NewProperty))
-			{
-				AddNewSpline(NewProperty); 
-			} 
-			AddSplinePoint(NewLocation);
-		}
-	}
+	ProcessMovement(DeltaTime);
 }
 
 // Called to bind functionality to input
@@ -152,9 +95,30 @@ void ARobotPawn::TogglePreview()
 	{
 		ShowPreview();
 	}
+
+	/*for (int i  = 0; i < Instructions.Num(); i++)
+	{
+		Instruction instruct = Instructions[i];
+
+		switch (instruct)
+		{
+		case Instruction::ForwardMove:
+			UE_LOG(LogTemp, Warning, TEXT("Forward: %f"), Details[i]);
+			break;
+		case Instruction::BackwardMove:
+			UE_LOG(LogTemp, Warning, TEXT("Back: %f"), Details[i]);
+			break;
+		case Instruction::Rotate:
+			UE_LOG(LogTemp, Warning, TEXT("Rotate: %f"), Details[i]);
+			break;
+		default:
+			break;
+		}
+		
+	}*/
 }
 
-void ARobotPawn::AddNewSpline(int Property)
+void ARobotPawn::AddNewSpline(Instruction Property)
 {
 	//Make the spline
 	USplineComponent* SplineToAdd = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
@@ -162,7 +126,8 @@ void ARobotPawn::AddNewSpline(int Property)
 
 	//add the values to memory
 	Splines.Add(SplineToAdd);
-	SplineProperties.Add(Property);
+	Instructions.Add(Property);
+	Details.Add(Splines.Num() - 1);
 }
 
 void ARobotPawn::AddSplinePoint(FVector Location)
@@ -198,15 +163,107 @@ void ARobotPawn::AddSplinePoint(FVector Location)
 	}
 	
 	//set material based on property
-	if (RobotPreviewSplineMaterial && SplineProperties[SplineProperties.Num() - 1] == 1)
+	if (RobotPreviewSplineMaterial && Instructions[Instructions.Num() - 1] == Instruction::ForwardMove)
 	{
 		SplineMeshComponent->SetMaterial(0, RobotPreviewSplineMaterial);
 	}
-	else if (RobotPreviewSplineMaterialBackward && SplineProperties[SplineProperties.Num() - 1] == -1)
+	else if (RobotPreviewSplineMaterialBackward && Instructions[Instructions.Num() - 1] == Instruction::BackwardMove)
 	{
 		SplineMeshComponent->SetMaterial(0, RobotPreviewSplineMaterialBackward);
 	}
 
 	if (!bPreviewShowing)
 		SplineMeshComponent->SetHiddenInGame(true);
+}
+
+void ARobotPawn::ProcessMovement(float DeltaTime)
+{
+	
+	ComputeAccelerations(DeltaTime);
+
+	Instruction CurrentInstruction = Instructions[Instructions.Num() - 1];
+
+	if (CurrentVelocity != 0)
+	{
+		FRotator NewRotation = Character->GetRelativeRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f);
+		Character->SetRelativeRotation(NewRotation);
+
+		FVector LastPoint = Splines[Splines.Num() - 1]->GetLocationAtSplinePoint(Splines[Splines.Num() - 1]->GetNumberOfSplinePoints() - 1, ESplineCoordinateSpace::World);
+		FVector NewLocation = Character->GetRelativeLocation() + GetActorLocation() + (CurrentVelocity * DeltaTime * Character->GetRightVector());
+		Character->SetWorldLocation(NewLocation);
+
+		if (FVector::Distance(NewLocation, LastPoint) > 50.0f)
+		{
+			if (CurrentVelocity < 0)
+			{
+				if (!(CurrentInstruction == Instruction::BackwardMove))
+					AddNewSpline(Instruction::BackwardMove);
+			}
+			else
+			{
+				if (!(CurrentInstruction == Instruction::ForwardMove))
+					AddNewSpline(Instruction::ForwardMove);
+			}
+			AddSplinePoint(NewLocation);
+		}
+	}
+	else if (CurrentRotationVelocity != 0)
+	{
+		FRotator NewRotation = Character->GetRelativeRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f);
+		Character->SetRelativeRotation(NewRotation);
+		if (CurrentInstruction != Instruction::Rotate)
+		{
+			Instructions.Add(Instruction::Rotate);
+			Details.Add(CurrentRotationVelocity * DeltaTime);
+		}
+		else
+		{
+			if ((Details[Details.Num() - 1] <= 0 && CurrentRotationVelocity * DeltaTime < 0) || (Details[Details.Num() - 1] >= 0 && CurrentRotationVelocity * DeltaTime > 0))
+			{
+				Details[Details.Num() - 1] += CurrentRotationVelocity * DeltaTime;
+			}
+			else
+			{
+				Instructions.Add(Instruction::Rotate);
+				Details.Add(CurrentRotationVelocity * DeltaTime);
+			}
+			
+		}
+	}
+}
+
+void ARobotPawn::ComputeAccelerations(float DeltaTime)
+{
+	if (CurrentAcceleration != 0)
+	{
+		CurrentVelocity = FMath::Clamp(CurrentVelocity + CurrentAcceleration * DeltaTime, -MaxSpeed, MaxSpeed);
+	}
+	else
+	{
+		if (CurrentVelocity > 0)
+		{
+			CurrentVelocity = FMath::Clamp(CurrentVelocity -= Speed * DeltaTime * Friction, 0, MaxSpeed);
+		}
+		else if (CurrentVelocity < 0)
+		{
+			CurrentVelocity = FMath::Clamp(CurrentVelocity += Speed * DeltaTime * Friction, -MaxSpeed, 0);
+		}
+
+	}
+
+	if (CurrentRotationAcceleration != 0)
+	{
+		CurrentRotationVelocity = FMath::Clamp(CurrentRotationVelocity + CurrentRotationAcceleration * DeltaTime, -MaxRotationalSpeed, MaxRotationalSpeed);
+	}
+	else
+	{
+		if (CurrentRotationVelocity > 0)
+		{
+			CurrentRotationVelocity = FMath::Clamp(CurrentRotationVelocity -= RotationSpeed * DeltaTime * Friction, 0, MaxRotationalSpeed);
+		}
+		else if (CurrentRotationVelocity < 0)
+		{
+			CurrentRotationVelocity = FMath::Clamp(CurrentRotationVelocity += RotationSpeed * DeltaTime * Friction, -MaxRotationalSpeed, 0);
+		}
+	}
 }

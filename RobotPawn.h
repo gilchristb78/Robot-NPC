@@ -8,6 +8,14 @@
 #include "Components/SplineMeshComponent.h"
 #include "RobotPawn.generated.h"
 
+UENUM(BlueprintType)
+enum class Instruction : uint8
+{
+	ForwardMove = 0 UMETA(DisplayName = "ForwardMove"),
+	BackwardMove = 1 UMETA(DisplayName = "BackwardMove"),
+	Rotate = 2 UMETA(DisplayName = "Rotate")
+};
+
 
 UCLASS()
 class ROBIT_API ARobotPawn : public APawn
@@ -25,9 +33,12 @@ public:
 	TArray<USplineComponent*> Splines;
 
 	TArray<USplineMeshComponent*> SplinePreviews;
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
+	TArray<Instruction> Instructions;
 
-	UPROPERTY(EditAnywhere, Category = "Robot")
-	TArray<int> SplineProperties;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
+	TArray<float> Details;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
 	float Speed = 5;
@@ -78,7 +89,9 @@ public:
 	float CurrentAcceleration;
 	float CurrentRotationVelocity = 0;
 	float CurrentRotationAcceleration;
-	void AddNewSpline(int Property);
+	void AddNewSpline(Instruction Property);
 	void AddSplinePoint(FVector Location);
+	void ProcessMovement(float DeltaTime);
+	void ComputeAccelerations(float DeltaTime);
 
 };
