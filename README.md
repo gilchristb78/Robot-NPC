@@ -37,11 +37,11 @@ In this repository I will design a robot npc character that can walk along a set
       
 - [ ] Change Properties to an enum representing what the robot is doing
     - [X] Forward / Back
-    - [ ] Rotate in Place
+    - [X] Rotate in Place
     - [ ] Work
 - [ ] add an int array or something linked to enum representing how to do the thing
-    - [ ] what spline to follow
-    - [ ] how much to rotate
+    - [X] what spline to follow
+    - [X] how much to rotate
     - [ ] specifics of work (# of items to collect, # of items to deposit, etc.)
       - [ ] make more dynamic, what to collect + how many, 
 
