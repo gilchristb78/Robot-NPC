@@ -84,6 +84,9 @@ public:
 
 	bool bPreviewShowing = true;
 
+	int CurrentInstructionIndex = 0;
+	float DistanceAlongSpline = 0;
+
 	//Input variables
 	float CurrentVelocity = 0;
 	float CurrentAcceleration;
@@ -93,5 +96,7 @@ public:
 	void AddSplinePoint(FVector Location);
 	void ProcessMovement(float DeltaTime);
 	void ComputeAccelerations(float DeltaTime);
+
+	void MoveIndependent(float DeltaTime);
 
 };

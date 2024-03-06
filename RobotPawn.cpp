@@ -42,7 +42,15 @@ void ARobotPawn::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	ProcessMovement(DeltaTime);
+	if (bPreviewShowing)
+	{
+		ProcessMovement(DeltaTime);
+	}
+	else
+	{
+		MoveIndependent(DeltaTime);
+	}
+	
 }
 
 // Called to bind functionality to input
@@ -80,9 +88,11 @@ void ARobotPawn::HidePreview()
 {
 	for (int i = 0; i < SplinePreviews.Num(); i++)
 	{
-		SplinePreviews[i]->SetHiddenInGame(true);
+		//SplinePreviews[i]->SetHiddenInGame(true);
 	}
 	bPreviewShowing = false;
+	CurrentInstructionIndex = 0;
+	
 }
 
 void ARobotPawn::TogglePreview()
@@ -95,27 +105,6 @@ void ARobotPawn::TogglePreview()
 	{
 		ShowPreview();
 	}
-
-	/*for (int i  = 0; i < Instructions.Num(); i++)
-	{
-		Instruction instruct = Instructions[i];
-
-		switch (instruct)
-		{
-		case Instruction::ForwardMove:
-			UE_LOG(LogTemp, Warning, TEXT("Forward: %f"), Details[i]);
-			break;
-		case Instruction::BackwardMove:
-			UE_LOG(LogTemp, Warning, TEXT("Back: %f"), Details[i]);
-			break;
-		case Instruction::Rotate:
-			UE_LOG(LogTemp, Warning, TEXT("Rotate: %f"), Details[i]);
-			break;
-		default:
-			break;
-		}
-		
-	}*/
 }
 
 void ARobotPawn::AddNewSpline(Instruction Property)
@@ -266,4 +255,71 @@ void ARobotPawn::ComputeAccelerations(float DeltaTime)
 			CurrentRotationVelocity = FMath::Clamp(CurrentRotationVelocity += RotationSpeed * DeltaTime * Friction, -MaxRotationalSpeed, 0);
 		}
 	}
+}
+
+void ARobotPawn::MoveIndependent(float DeltaTime)
+{
+	int SplineIndex;
+	FVector Location;
+	FRotator Rotation;
+
+	if (CurrentInstructionIndex > Instructions.Num() - 1)
+		return;
+
+	switch (Instructions[CurrentInstructionIndex])
+	{
+	case Instruction::ForwardMove:
+
+		SplineIndex = Details[CurrentInstructionIndex];
+		
+		DistanceAlongSpline += DeltaTime * MaxSpeed;
+		
+		Location = Splines[SplineIndex]->GetLocationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+		Rotation = Splines[SplineIndex]->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+		//Location.Z = CharacterLocation.Z; //todo deal with ground (needed?) only for later placed stuff
+		Rotation.Yaw -= 90;
+
+		Character->SetWorldLocation(Location);
+		Character->SetWorldRotation(Rotation);
+
+		if (DistanceAlongSpline > Splines[SplineIndex]->GetSplineLength())
+		{
+			CurrentInstructionIndex++;
+			DistanceAlongSpline = fmod(DistanceAlongSpline, Splines[SplineIndex]->GetSplineLength());
+		}
+			
+
+		break;
+	case Instruction::BackwardMove:
+
+		SplineIndex = Details[CurrentInstructionIndex];
+
+		DistanceAlongSpline += DeltaTime * MaxSpeed;
+
+		Location = Splines[SplineIndex]->GetLocationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+		Rotation = Splines[SplineIndex]->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+		//Location.Z = CharacterLocation.Z; //deal with ground
+		Rotation.Yaw += 90;
+		//Rotation = Rotation.GetInverse();
+		
+		
+		Character->SetWorldLocation(Location);
+		Character->SetWorldRotation(Rotation);
+
+		if (DistanceAlongSpline > Splines[SplineIndex]->GetSplineLength())
+		{
+			CurrentInstructionIndex++;
+			DistanceAlongSpline = fmod(DistanceAlongSpline, Splines[SplineIndex]->GetSplineLength());
+		}
+			
+
+		break;
+	case Instruction::Rotate:
+		UE_LOG(LogTemp, Warning, TEXT("ROTATE"));
+		break;
+	default:
+		break;
+	}
+
+
 }
