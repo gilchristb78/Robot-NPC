@@ -87,4 +87,15 @@ In this repository I will design a robot npc character that can walk along a set
     - [ ] Stop making new points after hit flag (start)
       - [ ] Arrow points at start?
       - [ ] reset button starts again (new start and clear all old points)
-      - [ ] Save tracks? 
+      - [ ] Save tracks?
+         
+    - [ ] Play Program
+      - [X] Follow Splines
+        - [X] Forward
+        - [X] Backward
+          - [X] Fix Yaw 
+      - [ ] Rotate
+      - [ ] Add acceleration
+        - [ ] Changing Speed
+        - [ ] Decelerate to stop at end of spline (some math to figure out speed decrease that equals stopping at end)
+      - [ ] Next Point is "Target" to try and get to (path around stuff) 
