@@ -86,6 +86,7 @@ public:
 
 	int CurrentInstructionIndex = 0;
 	float DistanceAlongSpline = 0;
+	float RotationAroundPoint = 0;
 
 	//Input variables
 	float CurrentVelocity = 0;
