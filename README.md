@@ -99,4 +99,9 @@ In this repository I will design a robot npc character that can walk along a set
       - [ ] Add acceleration
         - [ ] Changing Speed
         - [ ] Decelerate to stop at end of spline (some math to figure out speed decrease that equals stopping at end)
-      - [ ] Next Point is "Target" to try and get to (path around stuff) 
+      - [ ] Next Point is "Target" to try and get to (path around stuff)
+        - [ ] Maze solving algorithms
+          - [ ] BFS
+          - [ ] DFS
+          - [ ] A*
+          - [ ] Others
