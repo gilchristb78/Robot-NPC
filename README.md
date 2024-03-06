@@ -94,7 +94,8 @@ In this repository I will design a robot npc character that can walk along a set
         - [X] Forward
         - [X] Backward
           - [X] Fix Yaw 
-      - [ ] Rotate
+      - [X] Rotate
+      - [ ] Fix transition between instructions (maybe wait a second)
       - [ ] Add acceleration
         - [ ] Changing Speed
         - [ ] Decelerate to stop at end of spline (some math to figure out speed decrease that equals stopping at end)
