@@ -262,6 +262,7 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 	int SplineIndex;
 	FVector Location;
 	FRotator Rotation;
+	float DistanceToRotate;
 
 	if (CurrentInstructionIndex > Instructions.Num() - 1)
 		return;
@@ -315,7 +316,30 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 
 		break;
 	case Instruction::Rotate:
-		UE_LOG(LogTemp, Warning, TEXT("ROTATE"));
+
+		
+		DistanceToRotate = Details[CurrentInstructionIndex] - RotationAroundPoint;
+
+		if (DistanceToRotate < 0)
+		{
+			DistanceToRotate = FMath::Max(DistanceToRotate, -(MaxRotationalSpeed * DeltaTime));
+		}
+		else
+		{
+			DistanceToRotate = FMath::Min(DistanceToRotate, MaxRotationalSpeed * DeltaTime);
+		}
+
+		Rotation = Character->GetRelativeRotation() + FRotator(0.0f, DistanceToRotate, 0.0f);
+		Character->SetRelativeRotation(Rotation);
+
+		RotationAroundPoint += DistanceToRotate;
+
+		if (RotationAroundPoint == Details[CurrentInstructionIndex])
+		{
+			RotationAroundPoint = 0;
+			CurrentInstructionIndex++;
+		}
+		
 		break;
 	default:
 		break;
