@@ -198,9 +198,36 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 	}
 	else if (CurrentRotationVelocity != 0)
 	{
-		FRotator NewRotation = Character->GetRelativeRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f);
+		float RotateAmount = CurrentRotationVelocity * DeltaTime;
+		FRotator NewRotation = Character->GetRelativeRotation() + FRotator(0.0f, RotateAmount, 0.0f);
 		Character->SetRelativeRotation(NewRotation);
-		if (CurrentInstruction != Instruction::Rotate)
+
+		if (RotateAmount < 0)
+		{
+			if (CurrentInstruction != Instruction::RotateNegative)
+			{
+				Instructions.Add(Instruction::RotateNegative);
+				Details.Add(RotateAmount * -1);
+			}
+			else
+			{
+				Details[Details.Num() - 1] += RotateAmount * -1;
+			}
+		}
+		else
+		{
+			if (CurrentInstruction != Instruction::Rotate)
+			{
+				Instructions.Add(Instruction::Rotate);
+				Details.Add(RotateAmount);
+			}
+			else
+			{
+				Details[Details.Num() - 1] += RotateAmount;
+			}
+		}
+
+		/*if (CurrentInstruction != Instruction::Rotate)
 		{
 			Instructions.Add(Instruction::Rotate);
 			Details.Add(CurrentRotationVelocity * DeltaTime);
@@ -217,7 +244,7 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 				Details.Add(CurrentRotationVelocity * DeltaTime);
 			}
 			
-		}
+		}*/
 	}
 }
 
@@ -301,7 +328,6 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		Rotation = Splines[SplineIndex]->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
 		//Location.Z = CharacterLocation.Z; //deal with ground
 		Rotation.Yaw += 90;
-		//Rotation = Rotation.GetInverse();
 		
 		
 		Character->SetWorldLocation(Location);
@@ -310,7 +336,7 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		if (DistanceAlongSpline > Splines[SplineIndex]->GetSplineLength())
 		{
 			CurrentInstructionIndex++;
-			DistanceAlongSpline = fmod(DistanceAlongSpline, Splines[SplineIndex]->GetSplineLength());
+			DistanceAlongSpline = fmod(DistanceAlongSpline, Splines[SplineIndex]->GetSplineLength()); //possibly wait at end of instruction
 		}
 			
 
@@ -320,14 +346,8 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		
 		DistanceToRotate = Details[CurrentInstructionIndex] - RotationAroundPoint;
 
-		if (DistanceToRotate < 0)
-		{
-			DistanceToRotate = FMath::Max(DistanceToRotate, -(MaxRotationalSpeed * DeltaTime));
-		}
-		else
-		{
-			DistanceToRotate = FMath::Min(DistanceToRotate, MaxRotationalSpeed * DeltaTime);
-		}
+		DistanceToRotate = FMath::Min(DistanceToRotate, MaxRotationalSpeed * DeltaTime);
+
 
 		Rotation = Character->GetRelativeRotation() + FRotator(0.0f, DistanceToRotate, 0.0f);
 		Character->SetRelativeRotation(Rotation);
@@ -341,6 +361,26 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		}
 		
 		break;
+
+	case Instruction::RotateNegative:
+
+		DistanceToRotate = Details[CurrentInstructionIndex] - RotationAroundPoint;
+
+		DistanceToRotate = FMath::Min(DistanceToRotate, MaxRotationalSpeed * DeltaTime);
+
+
+		Rotation = Character->GetRelativeRotation() + FRotator(0.0f, -DistanceToRotate, 0.0f);
+		Character->SetRelativeRotation(Rotation);
+
+		RotationAroundPoint += DistanceToRotate;
+
+		if (RotationAroundPoint == Details[CurrentInstructionIndex])
+		{
+			RotationAroundPoint = 0;
+			CurrentInstructionIndex++;
+		}
+		break;
+
 	default:
 		break;
 	}

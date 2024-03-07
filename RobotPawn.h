@@ -13,7 +13,8 @@ enum class Instruction : uint8
 {
 	ForwardMove = 0 UMETA(DisplayName = "ForwardMove"),
 	BackwardMove = 1 UMETA(DisplayName = "BackwardMove"),
-	Rotate = 2 UMETA(DisplayName = "Rotate")
+	Rotate = 2 UMETA(DisplayName = "Rotate"),
+	RotateNegative = 3 UMETA(DisplayName = "RotateNegative")
 };
 
 
