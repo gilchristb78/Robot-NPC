@@ -88,6 +88,7 @@ In this repository I will design a robot npc character that can walk along a set
       - [ ] Arrow points at start?
       - [ ] reset button starts again (new start and clear all old points)
       - [ ] Save tracks?
+    - [ ] Fix first instruction is always spline forward
          
     - [ ] Play Program
       - [X] Follow Splines
@@ -95,6 +96,7 @@ In this repository I will design a robot npc character that can walk along a set
         - [X] Backward
           - [X] Fix Yaw 
       - [X] Rotate
+        - [ ] Rotate Backwards
       - [ ] Fix transition between instructions (maybe wait a second)
       - [ ] Add acceleration
         - [ ] Changing Speed
@@ -105,3 +107,4 @@ In this repository I will design a robot npc character that can walk along a set
           - [ ] DFS
           - [ ] A*
           - [ ] Others
+      - [ ] Loop Option 
