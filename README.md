@@ -28,6 +28,11 @@ In this repository I will design a robot npc character that can walk along a set
 - [X] Running into a wall not through
   - [ ] Path around obsticles back to spline
      
+- [ ] Running Into a Wall not Through
+  - [ ] around
+- [ ] falling
+- [ ] Jumping? maybe just slopes and such 
+     
 - [ ] Multiple splines
   - [X] Base Spline
   - [ ] Wait for some time (work)
@@ -81,6 +86,7 @@ In this repository I will design a robot npc character that can walk along a set
       - [X] Reverse direction slightly different
       - [ ] Rotate
       - [ ] Flag at start
+      - [ ] Change so it spawns based on distance or speed not number of points, this should ensure a consistant size for preview arrows
   - [X] Make multiple spline
   - [ ] add non movement actions (wait / work)
   - [ ] Start / Stop Program
@@ -98,10 +104,10 @@ In this repository I will design a robot npc character that can walk along a set
       - [X] Rotate
         - [X] Rotate Backwards
       - [X] Fix transition between instructions (maybe wait a second) (prob was positions were diff)
-      - [ ] Add acceleration
-        - [ ] Changing Speed
-        - [ ] Decelerate to stop at end of spline (some math to figure out speed decrease that equals stopping at end)
-          - [ ] use points not distance (there is some math that get # of points between each)
+      - [X] Add acceleration
+        - [X] Changing Speed
+        - [X] Decelerate to stop at end of spline (some math to figure out speed decrease that equals stopping at end)
+          - [X] use points not distance (there is some math that get # of points between each) 
       - [ ] Next Point is "Target" to try and get to (path around stuff)
         - [ ] Maze solving algorithms
           - [ ] BFS
