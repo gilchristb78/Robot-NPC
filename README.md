@@ -75,11 +75,11 @@ In this repository I will design a robot npc character that can walk along a set
     - [X] if current spline int == current direction (1 or -1) add to same spline
     - [X] else add new spline
     - [X] reversing addes new spline with int value of -1
-    - [ ] stopping / working has value > 1
     - [ ] visually see path (arrows along ground similar to how bloons td previews show before level)
       - [X] First Sections
       - [X] All Sections
       - [X] Reverse direction slightly different
+      - [ ] Rotate
       - [ ] Flag at start
   - [X] Make multiple spline
   - [ ] add non movement actions (wait / work)
@@ -96,11 +96,12 @@ In this repository I will design a robot npc character that can walk along a set
         - [X] Backward
           - [X] Fix Yaw 
       - [X] Rotate
-        - [ ] Rotate Backwards
-      - [ ] Fix transition between instructions (maybe wait a second)
+        - [X] Rotate Backwards
+      - [X] Fix transition between instructions (maybe wait a second) (prob was positions were diff)
       - [ ] Add acceleration
         - [ ] Changing Speed
         - [ ] Decelerate to stop at end of spline (some math to figure out speed decrease that equals stopping at end)
+          - [ ] use points not distance (there is some math that get # of points between each)
       - [ ] Next Point is "Target" to try and get to (path around stuff)
         - [ ] Maze solving algorithms
           - [ ] BFS
