@@ -136,7 +136,7 @@ void ARobotPawn::AddSplinePoint(FVector Location)
 
 	int previewDist = 10;
 	int pointIndex = Splines[Splines.Num() - 1]->GetNumberOfSplinePoints() - 1;
-	if (pointIndex % previewDist == 0 && pointIndex != 0)
+	if (pointIndex % previewDist == 0 && pointIndex != 0) //change to dist or possibly velocity / acceleration
 	{
 		USplineMeshComponent* SplineMeshComponent = NewObject<USplineMeshComponent>(this, USplineMeshComponent::StaticClass());
 		SplineMeshComponent->SetStaticMesh(RobotPreviewSplineMesh);
@@ -271,10 +271,6 @@ void ARobotPawn::ComputeAccelerations(float DeltaTime)
 
 void ARobotPawn::MoveIndependent(float DeltaTime)
 {
-	if (GetWorldTimerManager().IsTimerActive(TimerHandle_Interact))
-	{
-		return;
-	}
 	int SplineIndex;
 	FVector Location;
 	FRotator Rotation;
@@ -289,21 +285,20 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 
 		SplineIndex = Details[CurrentInstructionIndex];
 		
-		DistanceAlongSpline += DeltaTime * MaxSpeed;
-		
-		Location = Splines[SplineIndex]->GetLocationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
-		Rotation = Splines[SplineIndex]->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+		DistanceAlongSpline++;
+
+		Location = Splines[SplineIndex]->GetLocationAtSplinePoint(DistanceAlongSpline, ESplineCoordinateSpace::World);
+		Rotation = Splines[SplineIndex]->GetRotationAtSplinePoint(DistanceAlongSpline, ESplineCoordinateSpace::World);
 		//Location.Z = CharacterLocation.Z; //todo deal with ground (needed?) only for later placed stuff
 		Rotation.Yaw -= 90;
 
 		Character->SetWorldLocation(Location);
 		Character->SetWorldRotation(Rotation);
 
-		if (DistanceAlongSpline > Splines[SplineIndex]->GetSplineLength())
+		if (DistanceAlongSpline > Splines[SplineIndex]->GetNumberOfSplinePoints())
 		{
 			CurrentInstructionIndex++;
 			DistanceAlongSpline = 0;
-			GetWorldTimerManager().SetTimer(TimerHandle_Interact, 0.2f, false);
 		}
 			
 
@@ -312,22 +307,21 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 
 		SplineIndex = Details[CurrentInstructionIndex];
 
-		DistanceAlongSpline += DeltaTime * MaxSpeed;
+		DistanceAlongSpline++;
 
-		Location = Splines[SplineIndex]->GetLocationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
-		Rotation = Splines[SplineIndex]->GetRotationAtDistanceAlongSpline(DistanceAlongSpline, ESplineCoordinateSpace::World);
+		Location = Splines[SplineIndex]->GetLocationAtSplinePoint(DistanceAlongSpline, ESplineCoordinateSpace::World);
+		Rotation = Splines[SplineIndex]->GetRotationAtSplinePoint(DistanceAlongSpline, ESplineCoordinateSpace::World);
 		//Location.Z = CharacterLocation.Z; //deal with ground
-		Rotation.Yaw += 90;
+		Rotation.Yaw += 90; //would be +- 180 but rotation
 		
 		
 		Character->SetWorldLocation(Location);
 		Character->SetWorldRotation(Rotation);
 
-		if (DistanceAlongSpline > Splines[SplineIndex]->GetSplineLength())
+		if (DistanceAlongSpline > Splines[SplineIndex]->GetNumberOfSplinePoints())
 		{
 			CurrentInstructionIndex++;
 			DistanceAlongSpline = 0; //possibly wait at end of instruction
-			GetWorldTimerManager().SetTimer(TimerHandle_Interact, 0.2f, false);
 		}
 			
 
@@ -350,7 +344,7 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		{
 			RotationAroundPoint = 0;
 			CurrentInstructionIndex++;
-			GetWorldTimerManager().SetTimer(TimerHandle_Interact, 0.2f, false);
+			//GetWorldTimerManager().SetTimer(TimerHandle_Interact, 0.2f, false);
 		}
 		
 		break;
@@ -373,7 +367,7 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		{
 			RotationAroundPoint = 0;
 			CurrentInstructionIndex++;
-			GetWorldTimerManager().SetTimer(TimerHandle_Interact, 0.2f, false);
+			//GetWorldTimerManager().SetTimer(TimerHandle_Interact, 0.2f, false);
 		}
 		break;
 
