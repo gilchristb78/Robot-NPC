@@ -85,9 +85,9 @@ public:
 
 	bool bPreviewShowing = true;
 
-	int CurrentInstructionIndex = 0;
-	float DistanceAlongSpline = 0;
-	float RotationAroundPoint = 0;
+	int CurrentInstructionIndex;
+	float DistanceAlongSpline;
+	float RotationAroundPoint;
 
 	//Input variables
 	float CurrentVelocity = 0;
@@ -100,5 +100,9 @@ public:
 	void ComputeAccelerations(float DeltaTime);
 
 	void MoveIndependent(float DeltaTime);
+
+	FTimerHandle TimerHandle_Interact;
+	bool bIsPaused;
+	void unPause();
 
 };
