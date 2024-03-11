@@ -11,6 +11,7 @@
 UENUM(BlueprintType)
 enum class Instruction : uint8
 {
+	null = 99 UMETA(DISPLAYNAME = "null"),
 	ForwardMove = 0 UMETA(DisplayName = "ForwardMove"),
 	BackwardMove = 1 UMETA(DisplayName = "BackwardMove"),
 	Rotate = 2 UMETA(DisplayName = "Rotate"),

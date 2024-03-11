@@ -33,12 +33,12 @@ void ARobotPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	Splines[0] = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
+	/*Splines[0] = NewObject<USplineComponent>(this, USplineComponent::StaticClass());
 	Splines[0]->ClearSplinePoints();
 	Splines[0]->AddSplineWorldPoint(Character->GetRelativeLocation() + GetActorLocation());
 	Splines[0]->AddSplineWorldPoint(Character->GetRelativeLocation() + GetActorLocation() + (Character->GetRightVector() * 0.01));
 	Instructions.Add(Instruction::ForwardMove);
-	Details.Add(0);
+	Details.Add(0);*/
 
 	DistanceAlongSpline = 0;
 	RotationAroundPoint = 0;
@@ -187,15 +187,42 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 	
 	ComputeAccelerations(DeltaTime);
 
-	Instruction CurrentInstruction = Instructions[Instructions.Num() - 1];
+	Instruction CurrentInstruction = Instruction::null;
+	if(!(Instructions.Num() == 0))
+		CurrentInstruction = Instructions[Instructions.Num() - 1];
 
 	if (CurrentVelocity != 0)
 	{
 		FRotator NewRotation = Character->GetRelativeRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f);
 		Character->SetRelativeRotation(NewRotation);
 
-		FVector LastPoint = Splines[Splines.Num() - 1]->GetLocationAtSplinePoint(Splines[Splines.Num() - 1]->GetNumberOfSplinePoints() - 1, ESplineCoordinateSpace::World);
 		FVector NewLocation = Character->GetRelativeLocation() + GetActorLocation() + (CurrentVelocity * DeltaTime * Character->GetRightVector());
+
+
+		FVector Start = NewLocation;
+		Start.Z += 25;
+
+		FVector End = NewLocation;
+		End.Z -= 50;
+		DrawDebugLine(GetWorld(), Start, End, FColor::Green);
+		
+
+
+		FHitResult OutHit;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
+
+		if (OutHit.bBlockingHit)
+		{
+			NewLocation.Z = OutHit.Location.Z;
+		}
+		else
+		{
+			return; //falling
+		}
+
 		Character->SetWorldLocation(NewLocation);
 
 		if (CurrentVelocity < 0)
@@ -290,7 +317,7 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		Location = Splines[SplineIndex]->GetLocationAtSplinePoint(DistanceAlongSpline, ESplineCoordinateSpace::World);
 		Rotation = Splines[SplineIndex]->GetRotationAtSplinePoint(DistanceAlongSpline, ESplineCoordinateSpace::World);
 		//Location.Z = CharacterLocation.Z; //todo deal with ground (needed?) only for later placed stuff
-		Rotation.Yaw -= 90;
+		//Rotation.Yaw -= 90;
 
 		Character->SetWorldLocation(Location);
 		Character->SetWorldRotation(Rotation);
@@ -312,7 +339,7 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		Location = Splines[SplineIndex]->GetLocationAtSplinePoint(DistanceAlongSpline, ESplineCoordinateSpace::World);
 		Rotation = Splines[SplineIndex]->GetRotationAtSplinePoint(DistanceAlongSpline, ESplineCoordinateSpace::World);
 		//Location.Z = CharacterLocation.Z; //deal with ground
-		Rotation.Yaw += 90; //would be +- 180 but rotation
+		//Rotation.Yaw += 90; //would be +- 180 but rotation
 		
 		
 		Character->SetWorldLocation(Location);
