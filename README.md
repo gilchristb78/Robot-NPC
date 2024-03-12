@@ -17,7 +17,7 @@ In this repository I will design a robot npc character that can walk along a set
 - [ ] Change speed running uphill / downhill
   - [X] constant decrease / increase if on hill (binary)
     - [ ] Transition between current speed and Falling Speed (Acceleration)
-      - [ ] and direction 
+      - [X] and direction 
     - [ ] lower / increase based on slope (angle / steepness)
       - [ ] Increase / Decrease Friction
 
@@ -86,7 +86,8 @@ In this repository I will design a robot npc character that can walk along a set
       - [X] Reverse direction slightly different
       - [ ] Rotate
       - [ ] Flag at start
-      - [ ] Change so it spawns based on distance or speed not number of points, this should ensure a consistant size for preview arrows
+      - [X] Change so it spawns based on distance or speed not number of points, this should ensure a consistant size for preview arrows
+      - [ ] make it dots not arrows
   - [X] Make multiple spline
   - [ ] add non movement actions (wait / work)
   - [ ] Start / Stop Program
@@ -94,7 +95,7 @@ In this repository I will design a robot npc character that can walk along a set
       - [ ] Arrow points at start?
       - [ ] reset button starts again (new start and clear all old points)
       - [ ] Save tracks?
-    - [ ] Fix first instruction is always spline forward
+    - [X] Fix first instruction is always spline forward
          
     - [ ] Play Program
       - [X] Follow Splines
