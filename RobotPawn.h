@@ -99,8 +99,9 @@ public:
 	void AddSplinePoint(FVector Location);
 	void ProcessMovement(float DeltaTime);
 	void ComputeAccelerations(float DeltaTime);
-
+	void addPreview();
 	void MoveIndependent(float DeltaTime);
+
 
 	FTimerHandle TimerHandle_Interact;
 	bool bIsPaused;

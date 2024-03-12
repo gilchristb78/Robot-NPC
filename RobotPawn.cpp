@@ -122,8 +122,17 @@ void ARobotPawn::AddSplinePoint(FVector Location)
 	//add the point
 	Splines[Splines.Num() - 1]->AddSplineWorldPoint(Location);
 
+	addPreview();
+
+	//make the mesh
+	
+}
+
+void ARobotPawn::addPreview()
+{
 	int previewDist = 10;
 	int pointIndex = Splines[Splines.Num() - 1]->GetNumberOfSplinePoints() - 1;
+
 	if (pointIndex % previewDist == 0 && pointIndex != 0) //change to dist or possibly velocity / acceleration
 	{
 		USplineMeshComponent* SplineMeshComponent = NewObject<USplineMeshComponent>(this, USplineMeshComponent::StaticClass());
@@ -132,7 +141,7 @@ void ARobotPawn::AddSplinePoint(FVector Location)
 		SplineMeshComponent->RegisterComponentWithWorld(GetWorld());
 		SplineMeshComponent->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
 		SplineMeshComponent->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-		SplinePreviews.Add(SplineMeshComponent);
+		
 
 		//start and end points for our mesh
 		int32 SplinePoint1 = pointIndex - previewDist;
@@ -144,13 +153,22 @@ void ARobotPawn::AddSplinePoint(FVector Location)
 		FVector EndPoint = Splines[Splines.Num() - 1]->GetLocationAtSplinePoint(SplinePoint2, ESplineCoordinateSpace::Local);
 		FVector EndTangent = Splines[Splines.Num() - 1]->GetTangentAtSplinePoint(SplinePoint2, ESplineCoordinateSpace::Local);
 
-		SplineMeshComponent->SetStartAndEnd(StartPoint , StartTangent, EndPoint, EndTangent);
+		//Todo set a different material for different speeds?
+		//perhaps change all materials to just dots . . . . . . . .. .. ..  .   .   .   ....   ...  ..  .  .
+		if (CurrentVelocity > MaxSpeed / 2 || CurrentVelocity < -MaxSpeed / 2)//(FVector::Distance(StartPoint, EndPoint) > 20)
+		{
+			SplineMeshComponent->SetStartAndEnd(StartPoint, StartTangent, EndPoint, EndTangent);
+			if (SplinePreviews.Num() > 1 && SplinePreviews[SplinePreviews.Num() - 2]->GetEndPosition() == StartPoint)
+			{
+				SplinePreviews[SplinePreviews.Num() - 2]->SetEndTangent(StartTangent);
+			}
+			SplinePreviews.Add(SplineMeshComponent);
+		}
+
+		
 
 		//now that weve added a new mesh we have to fix our last tangent
-		if (pointIndex > previewDist)
-		{
-			SplinePreviews[SplinePreviews.Num() - 2]->SetEndTangent(StartTangent);
-		}
+		
 
 		//set material based on property
 		if (RobotPreviewSplineMaterial && Instructions[Instructions.Num() - 1] == Instruction::ForwardMove)
@@ -165,9 +183,6 @@ void ARobotPawn::AddSplinePoint(FVector Location)
 		if (!bPreviewShowing)
 			SplineMeshComponent->SetHiddenInGame(true);
 	}
-
-	//make the mesh
-	
 }
 
 void ARobotPawn::ProcessMovement(float DeltaTime)
@@ -185,7 +200,47 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 		SetActorRotation(NewRotation);
 
 		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime * GetActorForwardVector());
+		
+
+		FVector Start = NewLocation;
+		Start.Z += 25;
+
+		FVector End = NewLocation;
+		End.Z -= 50;
+		DrawDebugLine(GetWorld(), Start, End, FColor::Green);
+		
+		FHitResult OutHit;
+		FCollisionQueryParams Params;
+		Params.AddIgnoredActor(this);
+
+		GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
+		if (OutHit.bBlockingHit)
+		{
+			NewLocation.Z = OutHit.Location.Z;
+		}
+		else
+		{
+			return; //falling
+		}
 		SetActorLocation(NewLocation);
+
+
+		/*
+		
+		
+		
+		Added the ground stuff back ^^^^
+		not in pr
+		put this in seperate function
+		also add to autonomouse movement
+		and add running into wall stuff	
+		
+		
+		*/
+
+
+
+
 
 		if (CurrentVelocity < 0)
 		{
@@ -368,6 +423,8 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 
 
 }
+
+
 
 void ARobotPawn::unPause()
 {
