@@ -155,15 +155,15 @@ void ARobotPawn::addPreview()
 
 		//Todo set a different material for different speeds?
 		//perhaps change all materials to just dots . . . . . . . .. .. ..  .   .   .   ....   ...  ..  .  .
-		if (CurrentVelocity > MaxSpeed / 2 || CurrentVelocity < -MaxSpeed / 2)//(FVector::Distance(StartPoint, EndPoint) > 20)
-		{
+		//if (CurrentVelocity > MaxSpeed / 2 || CurrentVelocity < -MaxSpeed / 2)//(FVector::Distance(StartPoint, EndPoint) > 20)
+		//{
 			SplineMeshComponent->SetStartAndEnd(StartPoint, StartTangent, EndPoint, EndTangent);
 			if (SplinePreviews.Num() > 1 && SplinePreviews[SplinePreviews.Num() - 2]->GetEndPosition() == StartPoint)
 			{
 				SplinePreviews[SplinePreviews.Num() - 2]->SetEndTangent(StartTangent);
 			}
 			SplinePreviews.Add(SplineMeshComponent);
-		}
+		//}
 
 		
 
@@ -222,6 +222,26 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 		{
 			return; //falling
 		}
+
+		Start = GetActorLocation();
+		Start.Z += 25;
+
+		End = GetActorLocation();
+		int direction = 1;
+		if (CurrentVelocity < 0)
+			direction = -1;
+		End += GetActorForwardVector() * 50 * direction;
+		End.Z += 25;
+
+		DrawDebugLine(GetWorld(), Start, End, FColor::Blue);
+
+		GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
+
+		if (OutHit.bBlockingHit)
+		{
+			return; //running into wall
+		}
+
 		SetActorLocation(NewLocation);
 
 
