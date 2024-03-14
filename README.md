@@ -112,6 +112,9 @@ In this repository I will design a robot npc character that can walk along a set
       - [ ] Next Point is "Target" to try and get to (path around stuff)
         - [ ] Maze solving algorithms
           - [ ] BFS
+             
+      - [ ] Reverse Direction on slope gives wrong angle
+      - [ ] add friction for slopes up / down
           - [ ] DFS
           - [ ] A*
           - [ ] Others
