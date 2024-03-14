@@ -113,8 +113,9 @@ In this repository I will design a robot npc character that can walk along a set
         - [ ] Maze solving algorithms
           - [ ] BFS
              
-      - [ ] Reverse Direction on slope gives wrong angle
+      - [X] Reverse Direction on slope gives wrong angle
       - [ ] add friction for slopes up / down
+      - [ ] Running into walls then rotating should give "rotate" command but doesnt, instead since w or s keys are held it give the forward or backward move which gives weird play
           - [ ] DFS
           - [ ] A*
           - [ ] Others
