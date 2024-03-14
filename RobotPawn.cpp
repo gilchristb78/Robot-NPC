@@ -376,8 +376,9 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		Location = Splines[SplineIndex]->GetLocationAtSplinePoint(DistanceAlongSpline, ESplineCoordinateSpace::World);
 		Rotation = Splines[SplineIndex]->GetRotationAtSplinePoint(DistanceAlongSpline, ESplineCoordinateSpace::World);
 		//Location.Z = CharacterLocation.Z; //deal with ground
-		Rotation.Yaw += 180; //would be +- 180 but rotation
-		
+		Rotation.Yaw += 180; //face backwards
+		Rotation.Pitch *= -1; //if going up slope forward
+		Rotation.Roll *= -1; // ensure we are going down slope backward
 		
 		SetActorLocation(Location);
 		SetActorRotation(Rotation);
