@@ -194,73 +194,14 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 	if(!(Instructions.Num() == 0))
 		CurrentInstruction = Instructions[Instructions.Num() - 1];
 
-	if (CurrentVelocity != 0)
+	if (CurrentVelocity != 0 && canProceed())
 	{
 		FRotator NewRotation = GetActorRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f);
 		SetActorRotation(NewRotation);
 
 		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime * GetActorForwardVector());
-		
-
-		FVector Start = NewLocation;
-		Start.Z += 25;
-
-		FVector End = NewLocation;
-		End.Z -= 50;
-		DrawDebugLine(GetWorld(), Start, End, FColor::Green);
-		
-		FHitResult OutHit;
-		FCollisionQueryParams Params;
-		Params.AddIgnoredActor(this);
-
-		GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
-		if (OutHit.bBlockingHit)
-		{
-			NewLocation.Z = OutHit.Location.Z;
-		}
-		else
-		{
-			return; //falling
-		}
-
-		Start = GetActorLocation();
-		Start.Z += 25;
-
-		End = GetActorLocation();
-		int direction = 1;
-		if (CurrentVelocity < 0)
-			direction = -1;
-		End += GetActorForwardVector() * 50 * direction;
-		End.Z += 25;
-
-		DrawDebugLine(GetWorld(), Start, End, FColor::Blue);
-
-		GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
-
-		if (OutHit.bBlockingHit)
-		{
-			return; //running into wall
-		}
-
+		setGroundZ(NewLocation);
 		SetActorLocation(NewLocation);
-
-
-		/*
-		
-		
-		
-		Added the ground stuff back ^^^^
-		not in pr
-		put this in seperate function
-		also add to autonomouse movement
-		and add running into wall stuff	
-		
-		
-		*/
-
-
-
-
 
 		if (CurrentVelocity < 0)
 		{
@@ -296,6 +237,59 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 
 	}
 }
+
+bool ARobotPawn::canProceed()
+{
+	FVector Start = GetActorLocation();
+	Start.Z += 25;
+
+	FVector End = GetActorLocation();
+	int direction = 1;
+
+	if (CurrentVelocity < 0)
+		direction = -1;
+
+	End += GetActorForwardVector() * 75 * direction;
+	End.Z += 25;
+
+	DrawDebugLine(GetWorld(), Start, End, FColor::Blue);
+
+	FHitResult OutHit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
+
+	if (OutHit.bBlockingHit)
+	{
+		return false; //running into wall
+	}
+
+	return true;
+}
+
+void ARobotPawn::setGroundZ(FVector& location)
+{
+	FVector Start = location;
+	Start.Z += 25;
+
+	FVector End = location;
+	End.Z -= 50;
+	DrawDebugLine(GetWorld(), Start, End, FColor::Green);
+
+	FHitResult OutHit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
+	if (OutHit.bBlockingHit)
+	{
+		location.Z = OutHit.Location.Z;
+	}
+
+}
+
+
 
 void ARobotPawn::ComputeAccelerations(float DeltaTime)
 {
@@ -451,3 +445,4 @@ void ARobotPawn::unPause()
 {
 	bIsPaused = false;
 }
+

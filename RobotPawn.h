@@ -106,5 +106,7 @@ public:
 	FTimerHandle TimerHandle_Interact;
 	bool bIsPaused;
 	void unPause();
+	void setGroundZ(FVector& location);
+	bool canProceed();
 
 };
