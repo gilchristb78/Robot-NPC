@@ -118,8 +118,8 @@ In this repository I will design a robot npc character that can walk along a set
           - [ ] 
       - [X] Reverse Direction on slope gives wrong angle
       - [ ] add friction for slopes up / down
-      - [ ] Running into walls then rotating should give "rotate" command but doesnt, instead since w or s keys are held it give the forward or backward move which gives weird play
+      - [X] Running into walls then rotating should give "rotate" command but doesnt, instead since w or s keys are held it give the forward or backward move which gives weird play
         - [X] stop forward and rotate together if running into wall
-        - [ ] fix holding w and rotating near wall
-          - [ ] if hit wall bounce backwards off the wall.
+        - [X] fix holding w and rotating near wall
+          - [X] if hit wall bounce backwards off the wall.
       - [ ] Loop Option 
