@@ -169,23 +169,32 @@ void ARobotPawn::addPreview()
 void ARobotPawn::ProcessMovement(float DeltaTime)
 {
 	
+
 	ComputeAccelerations(DeltaTime);
+
+		
 
 	Instruction CurrentInstruction = Instruction::null;
 	if(!(Instructions.Num() == 0))
 		CurrentInstruction = Instructions[Instructions.Num() - 1];
 
 	if (!canProceed())
-		CurrentVelocity *= -0.8;
+		CurrentVelocity *= -0.75;
 
 	if (CurrentVelocity != 0)
 	{
-		FRotator NewRotation = GetActorRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f);
-		SetActorRotation(NewRotation);
-
 		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime * GetActorForwardVector());
 		setGroundZ(NewLocation);
+
+		if (falling)
+		{
+			return;
+		}
+
 		SetActorLocation(NewLocation);
+
+		FRotator NewRotation = GetActorRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f);
+		SetActorRotation(NewRotation);
 
 		if (CurrentVelocity < 0)
 		{
@@ -266,8 +275,23 @@ void ARobotPawn::setGroundZ(FVector& location)
 	if (OutHit.bBlockingHit)
 	{
 		location.Z = OutHit.Location.Z;
-	}
 
+		FVector normal = OutHit.ImpactNormal + GetActorUpVector();
+		DrawDebugLine(GetWorld(), OutHit.Location, OutHit.Location + OutHit.ImpactNormal * 1000, FColor::Cyan, true, 0.5f);
+		
+		//looking up a slope gives wrong results (regardless of forward or backward move, but looking down works)
+		FRotator normalrotation = normal.Rotation() + FRotator(-90.0f, 0, 0);
+		normalrotation.Yaw = GetActorRotation().Yaw;
+		normalrotation.Roll = GetActorRotation().Roll;
+		SetActorRotation(normalrotation);
+		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + GetActorRightVector() * 25, FColor::Red, true, 0.5f);
+		falling = false;
+	}
+	else
+	{
+		falling = true;
+	}
+	
 }
 
 
