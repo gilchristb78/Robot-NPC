@@ -122,4 +122,10 @@ In this repository I will design a robot npc character that can walk along a set
         - [X] stop forward and rotate together if running into wall
         - [X] fix holding w and rotating near wall
           - [X] if hit wall bounce backwards off the wall.
-      - [ ] Loop Option 
+      - [ ] Loop Option
+         
+    - [ ] Hill rotation
+      - [X] Looking downhill sets propper pitch
+      - [ ] look uphill sets proper pitch
+      - [ ] look left or right on hill affects roll
+      - [ ] do da math
