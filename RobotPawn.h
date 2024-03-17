@@ -108,5 +108,6 @@ public:
 	void unPause();
 	void setGroundZ(FVector& location);
 	bool canProceed();
+	bool falling = false;
 
 };
