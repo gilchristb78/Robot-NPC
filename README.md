@@ -28,7 +28,7 @@ In this repository I will design a robot npc character that can walk along a set
 - [X] Running into a wall not through
   - [ ] Path around obsticles back to spline
      
-- [ ] Running Into a Wall not Through
+- [X] Running Into a Wall not Through
   - [ ] around
 - [ ] falling
 - [ ] Jumping? maybe just slopes and such 
