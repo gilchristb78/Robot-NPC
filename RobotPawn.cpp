@@ -184,18 +184,21 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 
 	if (CurrentVelocity != 0)
 	{
-		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime * GetActorForwardVector());
-		setGroundZ(NewLocation);
-
 		if (falling)
 		{
-			return;
+			return; //actually fall
 		}
 
+		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime * GetActorForwardVector());
+		FRotator NewRotation = GetActorRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f); //rotate forward vector around up vector
 		SetActorLocation(NewLocation);
-
-		FRotator NewRotation = GetActorRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f);
 		SetActorRotation(NewRotation);
+		setRotAndPosNormalToGround();
+
+		
+		//SetActorLocation(NewLocation);
+
+		
 
 		if (CurrentVelocity < 0)
 		{
@@ -216,6 +219,7 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 		FRotator NewRotation =  GetActorRotation() + FRotator(0.0f, RotateAmount, 0.0f);
 		//Character->SetWorldRotation(NewRotation);
 		SetActorRotation(NewRotation);
+		setRotAndPosNormalToGround();
 		Instruction CurrentAction;
 		RotateAmount < 0 ? CurrentAction = Instruction::RotateNegative : CurrentAction = Instruction::Rotate;
 
@@ -234,14 +238,14 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 
 bool ARobotPawn::canProceed()
 {
-	FVector Start = GetActorLocation();
-	Start.Z += 25;
+	FVector Start = GetActorLocation() + GetActorUpVector() * 25;
+	//Start.Z += 25;
 
-	FVector End = GetActorLocation();
+	FVector End = GetActorLocation() + GetActorUpVector() * 25;
 	int direction = ((CurrentVelocity >= 0) * 2) - 1;
 
 	End += GetActorForwardVector() * 50 * direction;
-	End.Z += 25;
+	/*End.Z += 25;*/
 
 	DrawDebugLine(GetWorld(), Start, End, FColor::Blue);
 
@@ -257,37 +261,6 @@ bool ARobotPawn::canProceed()
 	}
 
 	return true;
-}
-
-void ARobotPawn::setGroundZ(FVector& location)
-{
-	FVector Start = location;
-	Start.Z += 25;
-
-	FVector End = location;
-	End.Z -= 50;
-	DrawDebugLine(GetWorld(), Start, End, FColor::Green);
-
-	FHitResult OutHit;
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-
-	GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
-	if (OutHit.bBlockingHit)
-	{
-		location.Z = OutHit.Location.Z;
-
-		FRotator finalRot = FRotationMatrix::MakeFromZX(OutHit.ImpactNormal, GetActorForwardVector()).Rotator(); 
-		//todo figure out the matrix math
-		SetActorRotation(finalRot);
-		
-		falling = false;
-	}
-	else
-	{
-		falling = true;
-	}
-	
 }
 
 
@@ -351,6 +324,7 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 
 		SetActorLocation(Location);
 		SetActorRotation(Rotation);
+		setRotAndPosNormalToGround();
 
 		if (DistanceAlongSpline > Splines[SplineIndex]->GetNumberOfSplinePoints())
 		{
@@ -373,6 +347,7 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		
 		SetActorLocation(Location);
 		SetActorRotation(Rotation);
+		setRotAndPosNormalToGround();
 
 		if (DistanceAlongSpline > Splines[SplineIndex]->GetNumberOfSplinePoints())
 		{
@@ -407,6 +382,7 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 		Rotation += FRotator(0.0f, DistanceToRotate, 0.0f);
 
 		SetActorRotation(Rotation);
+		setRotAndPosNormalToGround();
 
 		RotationAroundPoint += DistanceToRotate;
 
@@ -428,5 +404,37 @@ void ARobotPawn::MoveIndependent(float DeltaTime)
 void ARobotPawn::unPause()
 {
 	bIsPaused = false;
+}
+
+void ARobotPawn::setRotAndPosNormalToGround()
+{
+	FVector location = GetActorLocation();
+
+	FVector Start = location + GetActorUpVector() * 25; //would be gravity up vector not actors
+	//Start.Z += 25;
+
+	FVector End = location - GetActorUpVector() * 50; // same
+	//End.Z -= 50 
+
+	FHitResult OutHit;
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+
+	GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
+	if (OutHit.bBlockingHit)
+	{
+		location.Z = OutHit.Location.Z;
+
+		FRotator rotation = FRotationMatrix::MakeFromZX(OutHit.ImpactNormal, GetActorForwardVector()).Rotator();
+		//todo figure out the matrix math
+		SetActorRotation(rotation);
+		SetActorLocation(location);
+
+		falling = false;
+	}
+	else
+	{
+		falling = true;
+	}
 }
 
