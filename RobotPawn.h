@@ -106,7 +106,7 @@ public:
 	FTimerHandle TimerHandle_Interact;
 	bool bIsPaused;
 	void unPause();
-	void setGroundZ(FVector& location);
+	void setRotAndPosNormalToGround();
 	bool canProceed();
 	bool falling = false;
 
