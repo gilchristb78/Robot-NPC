@@ -2,6 +2,7 @@
 
 
 #include "RobotPawn.h"
+#include "Math/RotationMatrix.h"
 #include "Camera/CameraComponent.h"
 
 // Sets default values
@@ -276,15 +277,10 @@ void ARobotPawn::setGroundZ(FVector& location)
 	{
 		location.Z = OutHit.Location.Z;
 
-		FVector normal = OutHit.ImpactNormal + GetActorUpVector();
-		DrawDebugLine(GetWorld(), OutHit.Location, OutHit.Location + OutHit.ImpactNormal * 1000, FColor::Cyan, true, 0.5f);
+		FRotator finalRot = FRotationMatrix::MakeFromZX(OutHit.ImpactNormal, GetActorForwardVector()).Rotator(); 
+		//todo figure out the matrix math
+		SetActorRotation(finalRot);
 		
-		//looking up a slope gives wrong results (regardless of forward or backward move, but looking down works)
-		FRotator normalrotation = normal.Rotation() + FRotator(-90.0f, 0, 0);
-		normalrotation.Yaw = GetActorRotation().Yaw;
-		normalrotation.Roll = GetActorRotation().Roll;
-		SetActorRotation(normalrotation);
-		DrawDebugLine(GetWorld(), GetActorLocation(), GetActorLocation() + GetActorRightVector() * 25, FColor::Red, true, 0.5f);
 		falling = false;
 	}
 	else
