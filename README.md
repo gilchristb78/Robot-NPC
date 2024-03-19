@@ -124,8 +124,9 @@ In this repository I will design a robot npc character that can walk along a set
           - [X] if hit wall bounce backwards off the wall.
       - [ ] Loop Option
          
-    - [ ] Hill rotation
+    - [Z] Hill rotation
       - [X] Looking downhill sets propper pitch
-      - [ ] look uphill sets proper pitch
-      - [ ] look left or right on hill affects roll
+      - [Z] look uphill sets proper pitch
+      - [Z] look left or right on hill affects roll
       - [ ] do da math
+        - [ ] Do the matrix math not just a library
