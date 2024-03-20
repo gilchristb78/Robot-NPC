@@ -182,12 +182,16 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 	if (!canProceed())
 		CurrentVelocity *= -0.75;
 
+	if (falling)
+	{
+		FVector newLocation = GetActorLocation() + (GravityDirection * DeltaTime * 300);
+		SetActorLocation(newLocation);
+		setRotAndPosNormalToGround();
+	}
+
 	if (CurrentVelocity != 0)
 	{
-		if (falling)
-		{
-			return; //actually fall
-		}
+		
 
 		FVector NewLocation = GetActorLocation() + (CurrentVelocity * DeltaTime * GetActorForwardVector());
 		FRotator NewRotation = GetActorRotation() + FRotator(0.0f, CurrentRotationVelocity * DeltaTime, 0.0f); //rotate forward vector around up vector
@@ -238,10 +242,10 @@ void ARobotPawn::ProcessMovement(float DeltaTime)
 
 bool ARobotPawn::canProceed()
 {
-	FVector Start = GetActorLocation() + GetActorUpVector() * 25;
+	FVector Start = GetActorLocation() - GravityDirection * 25;
 	//Start.Z += 25;
 
-	FVector End = GetActorLocation() + GetActorUpVector() * 25;
+	FVector End = GetActorLocation() - GravityDirection * 25;
 	int direction = ((CurrentVelocity >= 0) * 2) - 1;
 
 	End += GetActorForwardVector() * 50 * direction;
@@ -410,10 +414,10 @@ void ARobotPawn::setRotAndPosNormalToGround()
 {
 	FVector location = GetActorLocation();
 
-	FVector Start = location + GetActorUpVector() * 25; //would be gravity up vector not actors
+	FVector Start = location - GravityDirection * 25; //would be gravity up vector not actors
 	//Start.Z += 25;
 
-	FVector End = location - GetActorUpVector() * 50; // same
+	FVector End = location + GravityDirection * 50; // same
 	//End.Z -= 50 
 
 	FHitResult OutHit;
@@ -423,18 +427,19 @@ void ARobotPawn::setRotAndPosNormalToGround()
 	GetWorld()->LineTraceSingleByChannel(OutHit, Start, End, ECC_Visibility, Params);
 	if (OutHit.bBlockingHit)
 	{
-		location.Z = OutHit.Location.Z;
+		location = OutHit.Location;
 
-		FRotator rotation = FRotationMatrix::MakeFromZX(OutHit.ImpactNormal, GetActorForwardVector()).Rotator();
+		FRotator rotation = FRotationMatrix::MakeFromZX(OutHit.ImpactNormal, GetActorForwardVector()).Rotator(); 
+		//set friction based on impactnormal angle away from upvector
 		//todo figure out the matrix math
 		SetActorRotation(rotation);
 		SetActorLocation(location);
-
 		falling = false;
 	}
 	else
 	{
 		falling = true;
+		UE_LOG(LogTemp, Warning, TEXT("FALL From %f, To %f"), location.Z, (location + GravityDirection * 50).Z);
 	}
 }
 
