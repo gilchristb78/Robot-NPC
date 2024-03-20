@@ -57,6 +57,9 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
 	float RotationSpeed = 1.4;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Robot")
+	FVector GravityDirection = FVector::DownVector;
+
 	UPROPERTY(EditAnywhere, Category = "Robot")
 	class UMaterialInterface* RobotPreviewSplineMaterial;
 
